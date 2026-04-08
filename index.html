@@ -1,294 +1,699 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jahdiel Kinvi - Portfolio</title>
+  <title>Jahdiel Kinvi · Data & AI</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --primary: #0f172a; --accent: #6366f1; --accent-light: #818cf8;
-      --bg: #f8fafc; --card: #ffffff; --text: #1e293b;
-      --muted: #64748b; --border: #e2e8f0;
+      --bg: #050a18; --bg2: #0a1628; --bg3: #0f1f3d;
+      --blue: #00d4ff; --gold: #f59e0b; --purple: #7c3aed;
+      --white: #f0f4ff; --muted: #8892a4;
+      --card: rgba(10,22,40,0.85); --border: rgba(0,212,255,0.15);
+      --glow: 0 0 25px rgba(0,212,255,0.25);
     }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); line-height: 1.7; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--white); overflow-x: hidden; }
+    @media (pointer: fine) { body { cursor: none; } }
 
-    nav { position: fixed; top: 0; width: 100%; background: rgba(15,23,42,0.95); backdrop-filter: blur(10px); z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-    nav .logo { color: #fff; font-weight: 700; font-size: 1.2rem; letter-spacing: 1px; }
-    nav .logo span { color: var(--accent-light); }
-    nav ul { list-style: none; display: flex; gap: 2rem; }
-    nav ul a { color: #cbd5e1; text-decoration: none; font-size: 0.9rem; transition: color 0.3s; }
-    nav ul a:hover { color: var(--accent-light); }
+    /* CURSOR */
+    .cursor { position: fixed; width: 10px; height: 10px; background: var(--blue); border-radius: 50%; pointer-events: none; z-index: 9999; transition: transform 0.1s; mix-blend-mode: screen; }
+    .cursor-ring { position: fixed; width: 38px; height: 38px; border: 1px solid rgba(0,212,255,0.5); border-radius: 50%; pointer-events: none; z-index: 9998; transition: transform 0.2s, border-color 0.2s; }
 
-    #hero { min-height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-    .hero-content h1 { font-size: 3.5rem; color: #fff; font-weight: 800; margin-bottom: 0.5rem; }
-    .hero-content h1 span { color: var(--accent-light); }
-    .hero-content .title { font-size: 1.3rem; color: #a5b4fc; margin-bottom: 1.5rem; font-weight: 400; }
-    .hero-content p { max-width: 650px; color: #cbd5e1; font-size: 1rem; margin: 0 auto 2rem; }
-    .hero-badges { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
-    .badge { background: rgba(99,102,241,0.2); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; padding: 0.4rem 1rem; border-radius: 999px; font-size: 0.85rem; }
-    .btn { display: inline-block; padding: 0.8rem 2rem; background: var(--accent); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; transition: background 0.3s, transform 0.2s; margin: 0.4rem; }
-    .btn:hover { background: #4f46e5; transform: translateY(-2px); }
-    .btn-outline { background: transparent; border: 2px solid var(--accent-light); color: var(--accent-light); }
-    .btn-outline:hover { background: var(--accent-light); color: #fff; }
+    /* CANVAS */
+    #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.35; }
 
-    section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
-    .section-title { font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
-    .section-title span { color: var(--accent); }
-    .section-divider { width: 60px; height: 4px; background: var(--accent); border-radius: 2px; margin-bottom: 3rem; }
+    /* NAV */
+    nav { position: fixed; top: 0; width: 100%; z-index: 1000; padding: 1.1rem 3rem; display: flex; justify-content: space-between; align-items: center; background: rgba(5,10,24,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .logo { font-size: 1.2rem; font-weight: 900; letter-spacing: 2px; }
+    .logo span { color: var(--blue); }
+    nav ul { list-style: none; display: flex; gap: 2.2rem; align-items: center; }
+    nav a { color: var(--muted); text-decoration: none; font-size: 0.82rem; letter-spacing: 1px; text-transform: uppercase; transition: color 0.3s; position: relative; }
+    nav a::after { content: ''; position: absolute; bottom: -3px; left: 0; width: 0; height: 1px; background: var(--blue); transition: width 0.3s; }
+    nav a:hover { color: var(--blue); }
+    nav a:hover::after { width: 100%; }
+    .lang-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; padding: 0.35rem 1rem; cursor: pointer; font-size: 0.78rem; color: var(--muted); transition: all 0.3s; display: flex; gap: 0.4rem; align-items: center; }
+    .lang-btn:hover { border-color: var(--blue); }
+    .lang-btn .active { color: var(--blue); font-weight: 700; }
 
-    #about { background: var(--card); border-radius: 16px; padding: 3rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); max-width: 1100px; margin: 2rem auto; }
-    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
-    .about-text p { color: var(--muted); margin-bottom: 1rem; }
-    .about-info { display: flex; flex-direction: column; gap: 1rem; }
-    .info-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1rem; background: var(--bg); border-radius: 8px; border-left: 3px solid var(--accent); }
-    .info-item .icon { font-size: 1.2rem; }
-    .info-item .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .info-item .value { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+    /* HERO */
+    #hero { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; z-index: 1; padding: 6rem 2rem 2rem; }
+    .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; max-width: 1200px; width: 100%; align-items: center; }
+    .hero-left h1 { font-size: 4rem; font-weight: 900; line-height: 1.05; margin-bottom: 0.8rem; }
+    .name-blue { color: var(--blue); }
+    .typewriter { font-size: 1.15rem; color: var(--gold); margin-bottom: 1.5rem; font-weight: 500; min-height: 1.8rem; }
+    .hero-left p { color: var(--muted); line-height: 1.85; margin-bottom: 2rem; font-size: 0.93rem; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; }
+    .hb { padding: 0.35rem 0.9rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    .hb-blue { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.25); color: var(--blue); }
+    .hb-gold { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); color: var(--gold); }
+    .hb-purple { background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.25); color: #a78bfa; }
+    .cta-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-p { padding: 0.85rem 2rem; background: var(--blue); color: var(--bg); border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.88rem; transition: all 0.3s; }
+    .btn-p:hover { box-shadow: var(--glow); transform: translateY(-2px); }
+    .btn-o { padding: 0.85rem 2rem; background: transparent; color: var(--blue); border: 1px solid var(--blue); border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.88rem; transition: all 0.3s; }
+    .btn-o:hover { background: rgba(0,212,255,0.08); box-shadow: var(--glow); }
 
-    #skills { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
-    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-    .skill-card { background: var(--card); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border-top: 3px solid var(--accent); transition: transform 0.2s; }
-    .skill-card:hover { transform: translateY(-4px); }
-    .skill-card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; }
-    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .tag { background: #eef2ff; color: var(--accent); font-size: 0.78rem; padding: 0.3rem 0.7rem; border-radius: 6px; font-weight: 500; }
+    /* PLAYER CARD */
+    .player-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; backdrop-filter: blur(20px); box-shadow: var(--glow); position: relative; overflow: hidden; }
+    .player-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--purple), var(--gold)); }
+    .card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 900; color: #fff; flex-shrink: 0; }
+    .card-name { font-size: 1.05rem; font-weight: 700; }
+    .card-sub { font-size: 0.78rem; color: var(--gold); font-weight: 600; margin-top: 0.2rem; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+    .stat-box { text-align: center; padding: 1rem 0.4rem; background: rgba(0,212,255,0.04); border-radius: 10px; border: 1px solid var(--border); }
+    .stat-num { font-size: 1.6rem; font-weight: 900; color: var(--blue); display: block; line-height: 1; }
+    .stat-lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.3rem; }
+    .info-row { display: flex; justify-content: space-between; padding: 0.55rem 0; border-bottom: 1px solid rgba(0,212,255,0.06); font-size: 0.8rem; }
+    .info-row:last-of-type { border-bottom: none; }
+    .ik { color: var(--muted); }
+    .iv { color: var(--white); font-weight: 600; }
+    .passion-tags { display: flex; gap: 0.4rem; margin-top: 1.2rem; flex-wrap: wrap; }
+    .ptag { font-size: 0.7rem; padding: 0.25rem 0.7rem; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 999px; color: var(--gold); }
 
-    #experience { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
-    .timeline { position: relative; padding-left: 2rem; }
-    .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), #c7d2fe); }
-    .timeline-item { position: relative; background: var(--card); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-    .timeline-item::before { content: ''; position: absolute; left: -2.55rem; top: 1.8rem; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 3px var(--accent); }
-    .timeline-item .company { font-size: 0.8rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
-    .timeline-item h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem; }
-    .timeline-item .date { font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; }
-    .timeline-item ul { padding-left: 1.2rem; color: var(--muted); font-size: 0.9rem; }
-    .timeline-item ul li { margin-bottom: 0.4rem; }
+    /* COUNTER BAND */
+    .counter-band { position: relative; z-index: 1; padding: 3rem 2rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(0,212,255,0.02); }
+    .counters { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem; text-align: center; }
+    .c-num { font-size: 2.5rem; font-weight: 900; color: var(--blue); display: block; line-height: 1; }
+    .c-lbl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 0.4rem; }
 
-    #education { background: var(--card); border-radius: 16px; padding: 3rem; box-shadow: 0 4px 24px rgba(0,0,0,0.06); max-width: 1100px; margin: 0 auto 2rem; }
+    /* SECTIONS */
+    .sw { position: relative; z-index: 1; padding: 5.5rem 2rem; }
+    .sw.alt { background: rgba(10,22,40,0.45); }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .s-label { font-size: 0.7rem; color: var(--blue); letter-spacing: 3px; text-transform: uppercase; font-weight: 700; margin-bottom: 0.4rem; }
+    .s-title { font-size: 2.3rem; font-weight: 800; margin-bottom: 0.4rem; }
+    .s-title span { color: var(--blue); }
+    .s-bar { width: 45px; height: 3px; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 2px; margin-bottom: 3rem; }
+
+    /* ABOUT */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
+    .about-text p { color: var(--muted); line-height: 1.9; margin-bottom: 1.1rem; font-size: 0.93rem; }
+    .about-text strong { color: var(--white); }
+    .fun-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .fun-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 1.3rem; transition: all 0.3s; }
+    .fun-card:hover { border-color: var(--blue); box-shadow: var(--glow); transform: translateY(-4px); }
+    .fun-emoji { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .fun-card h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .fun-card p { font-size: 0.75rem; color: var(--muted); line-height: 1.55; }
+
+    /* SKILLS */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.3rem; }
+    .skill-cat { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; transition: border-color 0.3s; }
+    .skill-cat:hover { border-color: var(--blue); }
+    .skill-cat-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 1.2rem; }
+    .skill-item { margin-bottom: 0.85rem; }
+    .skill-top { display: flex; justify-content: space-between; font-size: 0.76rem; margin-bottom: 0.3rem; }
+    .sn { color: var(--muted); }
+    .sp { color: var(--blue); font-weight: 700; }
+    .bar-bg { height: 4px; background: rgba(0,212,255,0.08); border-radius: 2px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 2px; width: 0; transition: width 1.3s cubic-bezier(0.4,0,0.2,1); }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.6rem; }
+    .tag { font-size: 0.7rem; padding: 0.22rem 0.6rem; background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.12); border-radius: 4px; color: var(--muted); }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 2.5rem; }
+    .timeline::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: linear-gradient(to bottom, var(--blue), transparent); }
+    .tl-item { position: relative; padding-bottom: 3rem; opacity: 0; transform: translateX(-20px); transition: all 0.65s ease; }
+    .tl-item.visible { opacity: 1; transform: translateX(0); }
+    .tl-dot { position: absolute; left: -2.9rem; top: 0.3rem; width: 12px; height: 12px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 12px var(--blue); }
+    .tl-co { font-size: 0.7rem; color: var(--blue); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 700; margin-bottom: 0.3rem; }
+    .tl-role { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .tl-date { font-size: 0.76rem; color: var(--muted); margin-bottom: 1rem; }
+    .tl-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; transition: border-color 0.3s; }
+    .tl-card:hover { border-color: var(--blue); }
+    .tl-card ul { list-style: none; }
+    .tl-card li { color: var(--muted); font-size: 0.83rem; line-height: 1.7; padding: 0.28rem 0; border-bottom: 1px solid rgba(0,212,255,0.04); display: flex; gap: 0.7rem; }
+    .tl-card li::before { content: '›'; color: var(--blue); flex-shrink: 0; }
+    .tl-card li:last-child { border-bottom: none; }
+
+    /* EDUCATION */
     .edu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .edu-card { background: var(--bg); border-radius: 10px; padding: 1.5rem; border-left: 4px solid var(--accent); }
-    .edu-card .school { font-size: 0.8rem; color: var(--accent); font-weight: 700; text-transform: uppercase; margin-bottom: 0.3rem; }
-    .edu-card h3 { font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.3rem; }
-    .edu-card .period { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.8rem; }
-    .edu-card p { font-size: 0.85rem; color: var(--muted); }
+    .edu-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; position: relative; overflow: hidden; transition: all 0.3s; }
+    .edu-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--blue), var(--purple)); }
+    .edu-card:hover { border-color: var(--blue); box-shadow: var(--glow); }
+    .edu-school { font-size: 0.72rem; color: var(--blue); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .edu-degree { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .edu-period { font-size: 0.78rem; color: var(--gold); margin-bottom: 0.8rem; }
+    .edu-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
 
-    #projects { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
-    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
-    .project-card { background: var(--card); border-radius: 12px; padding: 1.8rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); border-top: 4px solid var(--accent); transition: transform 0.2s, box-shadow 0.2s; }
-    .project-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(99,102,241,0.15); }
-    .project-card .project-emoji { font-size: 2rem; margin-bottom: 1rem; }
-    .project-card h3 { font-size: 1.1rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; }
-    .project-card p { font-size: 0.88rem; color: var(--muted); margin-bottom: 1rem; }
+    /* PROJECTS */
+    .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 1.5rem; }
+    .project-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; position: relative; overflow: hidden; transition: all 0.4s; opacity: 0; transform: translateY(20px); }
+    .project-card.visible { opacity: 1; transform: translateY(0); }
+    .project-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,212,255,0.04), transparent); opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+    .project-card:hover { border-color: var(--blue); transform: translateY(-6px); box-shadow: var(--glow); }
+    .project-card:hover::after { opacity: 1; }
+    .proj-num { font-size: 3.5rem; font-weight: 900; color: rgba(0,212,255,0.05); position: absolute; top: 0.8rem; right: 1.2rem; line-height: 1; }
+    .proj-emoji { font-size: 2rem; margin-bottom: 1rem; }
+    .proj-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.7rem; }
+    .proj-desc { font-size: 0.83rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; }
+    .proj-link { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--blue); text-decoration: none; border: 1px solid rgba(0,212,255,0.3); padding: 0.38rem 1rem; border-radius: 6px; transition: all 0.3s; margin-top: 0.3rem; }
+    .proj-link:hover { background: rgba(0,212,255,0.1); }
 
-    #contact { background: linear-gradient(135deg, #0f172a, #1e1b4b); border-radius: 16px; padding: 4rem 3rem; text-align: center; max-width: 1100px; margin: 0 auto 4rem; }
-    #contact .section-title { color: #fff; }
-    #contact .section-title span { color: var(--accent-light); }
-    #contact .section-divider { margin: 0.5rem auto 2rem; }
-    #contact p { color: #cbd5e1; margin-bottom: 2rem; font-size: 1rem; }
-    .contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    /* CONTACT */
+    .contact-box { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 4rem 3rem; text-align: center; position: relative; overflow: hidden; }
+    .contact-box::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 400px; height: 400px; background: radial-gradient(circle, rgba(0,212,255,0.06), transparent 70%); pointer-events: none; }
+    .c-title { font-size: 2rem; font-weight: 800; margin-bottom: 0.8rem; }
+    .c-sub { color: var(--muted); margin-bottom: 2.5rem; font-size: 0.93rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+    .c-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
 
-    footer { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--border); }
+    /* FOOTER */
+    footer { position: relative; z-index: 1; text-align: center; padding: 2rem; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); }
+    footer span { color: var(--blue); }
 
-    @media (max-width: 768px) {
-      .hero-content h1 { font-size: 2.2rem; }
-      .about-grid, .edu-grid { grid-template-columns: 1fr; }
-      nav ul { gap: 1rem; }
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(25px); transition: all 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .hero-left h1 { font-size: 2.8rem; }
+      .about-grid { grid-template-columns: 1fr; }
+      .edu-grid { grid-template-columns: 1fr; }
+      .counters { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width: 600px) {
+      nav { padding: 1rem 1.2rem; }
+      nav ul { display: none; }
+      .hero-left h1 { font-size: 2rem; }
+      .s-title { font-size: 1.7rem; }
+      .fun-grid { grid-template-columns: 1fr; }
+      .contact-box { padding: 2.5rem 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <div class="logo">JK<span>.</span></div>
-    <ul>
-      <li><a href="#about">À propos</a></li>
-      <li><a href="#skills">Compétences</a></li>
-      <li><a href="#experience">Expériences</a></li>
-      <li><a href="#projects">Projets</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </nav>
+<canvas id="canvas-bg"></canvas>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
 
-  <section id="hero">
-    <div class="hero-content">
-      <h1>Jahdiel <span>Kinvi</span></h1>
-      <p class="title">MSc AI Applied to Business · Data & PMO</p>
-      <p>Étudiant passionné par la data science, la transformation digitale et le pilotage de projets. Fort d'expériences chez Safran et BNP Paribas Cardif, je mets mes compétences au service de projets à fort impact.</p>
+<!-- NAV -->
+<nav>
+  <div class="logo">JK<span>.</span></div>
+  <ul>
+    <li><a href="#about" data-key="nav-about">About</a></li>
+    <li><a href="#skills" data-key="nav-skills">Skills</a></li>
+    <li><a href="#experience" data-key="nav-exp">Experience</a></li>
+    <li><a href="#projects" data-key="nav-proj">Projects</a></li>
+    <li><a href="#contact" data-key="nav-contact">Contact</a></li>
+  </ul>
+  <button class="lang-btn" onclick="toggleLang()">
+    <span id="l-en" class="active">EN</span>
+    <span style="color:var(--muted)">|</span>
+    <span id="l-fr">FR</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="hero-left reveal">
+      <h1>Jahdiel<br><span class="name-blue">Kinvi</span></h1>
+      <div class="typewriter" id="tw"></div>
+      <p data-key="hero-p">Engineer turned Data & AI specialist. I transform raw data into decisions, industrial systems into intelligent workflows, and complex problems into clear strategies. MSc AI Applied to Business · Eugenia School, Paris.</p>
       <div class="hero-badges">
-        <span class="badge">🐍 Python</span>
-        <span class="badge">📊 Power BI</span>
-        <span class="badge">🗄️ SQL</span>
-        <span class="badge">🤖 AI & Data</span>
-        <span class="badge">📋 PMO</span>
+        <span class="hb hb-blue">🐍 Python</span>
+        <span class="hb hb-blue">📊 Power BI</span>
+        <span class="hb hb-blue">🗄️ SQL</span>
+        <span class="hb hb-purple">🤖 AI Agents</span>
+        <span class="hb hb-gold">📋 PMO</span>
+        <span class="hb hb-gold">🏀 Basketball</span>
       </div>
-      <a href="#contact" class="btn">Me contacter</a>
-      <a href="#experience" class="btn btn-outline">Mon parcours</a>
+      <div class="cta-row">
+        <a href="#contact" class="btn-p" data-key="hero-cta1">Get in touch</a>
+        <a href="#projects" class="btn-o" data-key="hero-cta2">View projects</a>
+      </div>
     </div>
-  </section>
 
-  <section id="about">
-    <div class="section-title">À <span>propos</span></div>
-    <div class="section-divider"></div>
+    <div class="player-card reveal">
+      <div class="card-header">
+        <div class="avatar">JK</div>
+        <div>
+          <div class="card-name">Jahdiel Kinvi</div>
+          <div class="card-sub" data-key="card-sub">MSc AI Applied to Business</div>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <span class="stat-num counter" data-target="2000" data-suffix="+">0</span>
+          <div class="stat-lbl" data-key="s1">Records Structured</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num counter" data-target="1500" data-suffix="+">0</span>
+          <div class="stat-lbl" data-key="s2">Accounting Entries</div>
+        </div>
+        <div class="stat-box">
+          <span class="stat-num counter" data-target="7" data-suffix="">0</span>
+          <div class="stat-lbl" data-key="s3">Projects Led</div>
+        </div>
+      </div>
+      <div class="info-row"><span class="ik" data-key="c-loc">Location</span><span class="iv">Champigny-sur-Marne, 94</span></div>
+      <div class="info-row"><span class="ik" data-key="c-avail">Availability</span><span class="iv" style="color:#22c55e" data-key="c-avail-v">Open to opportunities</span></div>
+      <div class="info-row"><span class="ik" data-key="c-mob">Mobility</span><span class="iv" data-key="c-mob-v">Europe & North America</span></div>
+      <div class="info-row"><span class="ik" data-key="c-lang">Languages</span><span class="iv">🇫🇷 French · 🇬🇧 English B2+</span></div>
+      <div class="passion-tags">
+        <span class="ptag" data-key="pt1">🏀 Basketball Captain</span>
+        <span class="ptag" data-key="pt2">📚 Proust · Coates</span>
+        <span class="ptag" data-key="pt3">⚽ FC Barcelona</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTER BAND -->
+<div class="counter-band">
+  <div class="counters">
+    <div class="reveal">
+      <span class="c-num counter" data-target="3" data-suffix="">0</span>
+      <div class="c-lbl" data-key="ct1">Years Experience</div>
+    </div>
+    <div class="reveal">
+      <span class="c-num counter" data-target="5" data-suffix="">0</span>
+      <div class="c-lbl" data-key="ct2">Key Projects</div>
+    </div>
+    <div class="reveal">
+      <span class="c-num counter" data-target="95" data-suffix="%">0</span>
+      <div class="c-lbl" data-key="ct3">Corrective Action Success</div>
+    </div>
+    <div class="reveal">
+      <span class="c-num counter" data-target="2" data-suffix="">0</span>
+      <div class="c-lbl" data-key="ct4">Fortune 500 Companies</div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="sw alt">
+  <div class="container">
+    <div class="s-label">Who I am</div>
+    <h2 class="s-title">About <span>Me</span></h2>
+    <div class="s-bar"></div>
     <div class="about-grid">
-      <div class="about-text">
-        <p>Diplômé d'une Licence Sciences pour l'Ingénieur en Maintenance Industrielle, je suis actuellement en <strong>MSc AI Applied to Business</strong> à Eugenia School (Paris).</p>
-        <p>Mes expériences chez <strong>Safran</strong> et <strong>BNP Paribas Cardif</strong> m'ont permis de développer de solides compétences en structuration de données, automatisation de reporting, contrôle de gestion et pilotage de projets.</p>
-        <p>Rigoureux, autonome et curieux, je souhaite contribuer à des projets à fort impact en <strong>data science</strong>, performance industrielle et transformation digitale.</p>
-        <p>En dehors du travail, je suis capitaine de l'équipe de basket de Champigny-sur-Marne, passionné de lecture (Proust, Ta-Nehisi Coates) et supporter du FC Barcelone. ⚽🏀📚</p>
+      <div class="about-text reveal">
+        <p data-key="a-p1">I'm a bridge between two worlds: the <strong>precision of industrial engineering</strong> and the <strong>intelligence of data science</strong>. My journey started with machines — understanding how they break, how to maintain them, how to optimize them. I now apply that same mindset to data, AI, and business strategy.</p>
+        <p data-key="a-p2">At <strong>Safran</strong>, I led the migration of 2000+ industrial assets into a new GMAO system. At <strong>BNP Paribas Cardif</strong>, I built financial dashboards and supported PMO governance across 7 strategic projects. Every role taught me that the best solutions sit at the intersection of technical rigor and human understanding.</p>
+        <p data-key="a-p3">Off-screen, you'll find me captaining my basketball team in Champigny-sur-Marne, reading Proust or Ta-Nehisi Coates, or watching FC Barcelona prove that beautiful systems win. My NBA scraping project isn't a coincidence — data and sport have always spoken the same language to me.</p>
       </div>
-      <div class="about-info">
-        <div class="info-item"><span class="icon">📍</span><div><div class="label">Localisation</div><div class="value">Champigny-sur-Marne (94)</div></div></div>
-        <div class="info-item"><span class="icon">🎓</span><div><div class="label">Formation</div><div class="value">MSc AI Applied to Business – Eugenia School</div></div></div>
-        <div class="info-item"><span class="icon">💼</span><div><div class="label">Contrat recherché</div><div class="value">Alternance / CDD / CDI</div></div></div>
-        <div class="info-item"><span class="icon">🌍</span><div><div class="label">Mobilité</div><div class="value">Europe & Amérique du Nord</div></div></div>
-        <div class="info-item"><span class="icon">🇬🇧</span><div><div class="label">Anglais</div><div class="value">B2+ – Compétence professionnelle</div></div></div>
+      <div class="fun-grid reveal">
+        <div class="fun-card">
+          <div class="fun-emoji">🏀</div>
+          <h4 data-key="f1h">Team Captain</h4>
+          <p data-key="f1p">Leading the basketball team of Champigny-sur-Marne. Leadership on and off the court.</p>
+        </div>
+        <div class="fun-card">
+          <div class="fun-emoji">📊</div>
+          <h4 data-key="f2h">Data Storyteller</h4>
+          <p data-key="f2p">Turning raw numbers into insights. Scraping NBA data just for the love of it.</p>
+        </div>
+        <div class="fun-card">
+          <div class="fun-emoji">📚</div>
+          <h4 data-key="f3h">Avid Reader</h4>
+          <p data-key="f3p">Proust for depth. Ta-Nehisi Coates for perspective. Reading shapes my thinking.</p>
+        </div>
+        <div class="fun-card">
+          <div class="fun-emoji">🤖</div>
+          <h4 data-key="f4h">AI Builder</h4>
+          <p data-key="f4p">Building AI agents with Dust that solve real workplace problems. No hype, just utility.</p>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="skills">
-    <div class="section-title">Compé<span>tences</span></div>
-    <div class="section-divider"></div>
+<!-- SKILLS -->
+<section id="skills" class="sw">
+  <div class="container">
+    <div class="s-label">What I do</div>
+    <h2 class="s-title"><span>Skills</span> & Tools</h2>
+    <div class="s-bar"></div>
     <div class="skills-grid">
-      <div class="skill-card"><h3>🤖 Data Science & Analytics</h3><div class="tags"><span class="tag">Python</span><span class="tag">SQL</span><span class="tag">Power BI</span><span class="tag">Excel VBA</span><span class="tag">MySQL</span><span class="tag">SQLite</span><span class="tag">Dataiku</span><span class="tag">Google Analytics</span></div></div>
-      <div class="skill-card"><h3>⚙️ Data Engineering</h3><div class="tags"><span class="tag">Structuration de données</span><span class="tag">Automatisation</span><span class="tag">Qualité des données</span><span class="tag">Power Query</span><span class="tag">Airtable</span><span class="tag">Notion</span></div></div>
-      <div class="skill-card"><h3>📋 PMO & Pilotage de projet</h3><div class="tags"><span class="tag">Gouvernance</span><span class="tag">RACI</span><span class="tag">AMDEC</span><span class="tag">Microsoft Project</span><span class="tag">SharePoint</span><span class="tag">SAP</span></div></div>
-      <div class="skill-card"><h3>🏭 Ingénierie Industrielle</h3><div class="tags"><span class="tag">GMAO</span><span class="tag">CARL Source</span><span class="tag">OptiMaint</span><span class="tag">HSE</span><span class="tag">5S</span><span class="tag">SMED</span><span class="tag">SolidWorks</span><span class="tag">AutoCAD</span></div></div>
-      <div class="skill-card"><h3>💻 Systèmes & Automatisation</h3><div class="tags"><span class="tag">Arduino</span><span class="tag">C/C++</span><span class="tag">Linux</span><span class="tag">Matlab</span><span class="tag">Copilot Studio</span><span class="tag">Robotique</span></div></div>
-      <div class="skill-card"><h3>💰 Contrôle de Gestion</h3><div class="tags"><span class="tag">Suivi budgétaire</span><span class="tag">KPI</span><span class="tag">Tableaux de bord</span><span class="tag">Reporting financier</span><span class="tag">HubSpot</span></div></div>
+      <div class="skill-cat reveal">
+        <div class="skill-cat-title">🤖 Data Science & Analytics</div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Python</span><span class="sp">80%</span></div><div class="bar-bg"><div class="bar-fill" data-w="80"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Power BI</span><span class="sp">85%</span></div><div class="bar-bg"><div class="bar-fill" data-w="85"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">SQL</span><span class="sp">75%</span></div><div class="bar-bg"><div class="bar-fill" data-w="75"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Excel VBA</span><span class="sp">88%</span></div><div class="bar-bg"><div class="bar-fill" data-w="88"></div></div></div>
+        <div class="tags"><span class="tag">Pandas</span><span class="tag">Web Scraping</span><span class="tag">Dataiku</span><span class="tag">Google Analytics</span></div>
+      </div>
+      <div class="skill-cat reveal">
+        <div class="skill-cat-title">📋 PMO & Project Management</div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Governance & RACI</span><span class="sp">85%</span></div><div class="bar-bg"><div class="bar-fill" data-w="85"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Reporting & KPIs</span><span class="sp">90%</span></div><div class="bar-bg"><div class="bar-fill" data-w="90"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Microsoft Project</span><span class="sp">78%</span></div><div class="bar-bg"><div class="bar-fill" data-w="78"></div></div></div>
+        <div class="tags"><span class="tag">SAP</span><span class="tag">SharePoint</span><span class="tag">AMDEC</span><span class="tag">HubSpot</span></div>
+      </div>
+      <div class="skill-cat reveal">
+        <div class="skill-cat-title">🏭 Industrial Engineering</div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">GMAO (CARL / OptiMaint)</span><span class="sp">90%</span></div><div class="bar-bg"><div class="bar-fill" data-w="90"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">HSE & 5S Audits</span><span class="sp">82%</span></div><div class="bar-bg"><div class="bar-fill" data-w="82"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">CAD (SolidWorks / AutoCAD)</span><span class="sp">74%</span></div><div class="bar-bg"><div class="bar-fill" data-w="74"></div></div></div>
+        <div class="tags"><span class="tag">Arduino</span><span class="tag">C/C++</span><span class="tag">SMED</span><span class="tag">Linux</span></div>
+      </div>
+      <div class="skill-cat reveal">
+        <div class="skill-cat-title">🤖 AI & No-Code</div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Dust (AI Agents)</span><span class="sp">85%</span></div><div class="bar-bg"><div class="bar-fill" data-w="85"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Copilot Studio</span><span class="sp">70%</span></div><div class="bar-bg"><div class="bar-fill" data-w="70"></div></div></div>
+        <div class="skill-item"><div class="skill-top"><span class="sn">Airtable / Notion</span><span class="sp">80%</span></div><div class="bar-bg"><div class="bar-fill" data-w="80"></div></div></div>
+        <div class="tags"><span class="tag">LLMs</span><span class="tag">Prompt Engineering</span><span class="tag">Automation</span><span class="tag">Vibe Coding</span></div>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="experience">
-    <div class="section-title">Expé<span>riences</span></div>
-    <div class="section-divider"></div>
+<!-- EXPERIENCE -->
+<section id="experience" class="sw alt">
+  <div class="container">
+    <div class="s-label">Where I've been</div>
+    <h2 class="s-title">Work <span>Experience</span></h2>
+    <div class="s-bar"></div>
     <div class="timeline">
-      <div class="timeline-item">
-        <div class="company">Safran – Mantes-la-Ville</div>
-        <h3>Pilote et Gestionnaire GMAO</h3>
-        <div class="date">Avril 2025 – Octobre 2025</div>
-        <ul>
-          <li>Pilotage de la migration GMAO (OptiMaint → CARL Source) : structuration de +2000 organes</li>
-          <li>Import automatisé via CARL Loader (.csv/.xml), câblage et traçabilité</li>
-          <li>Digitalisation & reporting : automatisation de tableaux de bord sous Excel (VBA) et Power BI</li>
-          <li>Contribution aux audits 5S et HSE (progression de 0,16 à 3/5)</li>
-          <li>95% d'actions correctives réussies – appui gouvernance projet</li>
-        </ul>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-co">Safran · Mantes-la-Ville</div>
+        <div class="tl-role" data-key="e1r">GMAO Pilot & Manager</div>
+        <div class="tl-date">April 2025 – October 2025</div>
+        <div class="tl-card"><ul>
+          <li data-key="e1-1">Led GMAO migration (OptiMaint → CARL Source) — structured 2000+ industrial assets</li>
+          <li data-key="e1-2">Automated data import via CARL Loader (.csv/.xml) — full traceability</li>
+          <li data-key="e1-3">Built Excel VBA macros & Power BI dashboards for real-time equipment monitoring</li>
+          <li data-key="e1-4">Drove 5S & HSE audit score from 0.16 to 3/5</li>
+          <li data-key="e1-5">95% corrective action success rate — full PMO governance support</li>
+        </ul></div>
       </div>
-      <div class="timeline-item">
-        <div class="company">BNP Paribas Cardif – Nanterre</div>
-        <h3>Assistant Comptable</h3>
-        <div class="date">Décembre 2024 – Janvier 2025</div>
-        <ul>
-          <li>Contrôle des comptes hors périmètre standard</li>
-          <li>Création d'un tableau de bord de suivi des indicateurs financiers</li>
-        </ul>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-co">BNP Paribas Cardif · Nanterre</div>
+        <div class="tl-role" data-key="e2r">Assistant Accountant</div>
+        <div class="tl-date">December 2024 – January 2025</div>
+        <div class="tl-card"><ul>
+          <li data-key="e2-1">Reviewed and controlled accounts outside standard perimeter</li>
+          <li data-key="e2-2">Built a financial KPI tracking dashboard</li>
+        </ul></div>
       </div>
-      <div class="timeline-item">
-        <div class="company">BNP Paribas Cardif – Nanterre</div>
-        <h3>Gestionnaire assistant des mandats et contrôle</h3>
-        <div class="date">Juin 2024 – Octobre 2024</div>
-        <ul>
-          <li>Traitement des OST sur un portefeuille de 7 clients principaux + 4 en back-up</li>
-          <li>Production de reportings statistiques (85-100% de complétion)</li>
-          <li>Environ 1500 saisies comptables réalisées</li>
-        </ul>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-co">BNP Paribas Cardif · Nanterre</div>
+        <div class="tl-role" data-key="e3r">Mandate & Control Management Assistant</div>
+        <div class="tl-date">June 2024 – October 2024</div>
+        <div class="tl-card"><ul>
+          <li data-key="e3-1">Processed OSTs for 7 main clients + 4 backup clients</li>
+          <li data-key="e3-2">Produced statistical reports with 85–100% completion rate</li>
+          <li data-key="e3-3">~1500 accounting entries processed</li>
+        </ul></div>
       </div>
-      <div class="timeline-item">
-        <div class="company">BNP Paribas Cardif – Nanterre</div>
-        <h3>Assistant Coordination Transverse – CIO Office</h3>
-        <div class="date">Février 2024</div>
-        <ul>
-          <li>Appui PMO sur 7 projets techniques stratégiques</li>
-          <li>Préparation de supports pour les comités de pilotage</li>
-          <li>Contribution à la gouvernance et valorisation des projets</li>
-        </ul>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-co">BNP Paribas Cardif · Nanterre</div>
+        <div class="tl-role" data-key="e4r">Cross-Functional Coordination Assistant – CIO Office</div>
+        <div class="tl-date">February 2024</div>
+        <div class="tl-card"><ul>
+          <li data-key="e4-1">PMO support across 7 strategic technical projects</li>
+          <li data-key="e4-2">Prepared steering committee materials</li>
+          <li data-key="e4-3">Contributed to project governance and value communication</li>
+        </ul></div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="education">
-    <div class="section-title">For<span>mation</span></div>
-    <div class="section-divider"></div>
+<!-- EDUCATION -->
+<section id="education" class="sw">
+  <div class="container">
+    <div class="s-label">Academic Background</div>
+    <h2 class="s-title">Edu<span>cation</span></h2>
+    <div class="s-bar"></div>
     <div class="edu-grid">
-      <div class="edu-card">
-        <div class="school">Eugenia School – Paris</div>
-        <h3>MSc AI Applied to Business</h3>
-        <div class="period">Depuis Janvier 2026</div>
-        <p>Visualisation et analyse de données, Code, No-code, Stratégie, Finance, Marketing</p>
+      <div class="edu-card reveal">
+        <div class="edu-school">Eugenia School · Paris</div>
+        <div class="edu-degree" data-key="ed1">MSc AI Applied to Business</div>
+        <div class="edu-period" data-key="ed1p">Since January 2026</div>
+        <div class="edu-desc" data-key="ed1d">Data visualization, Coding, No-code, AI Strategy, Finance, Marketing — bridging AI and business impact.</div>
       </div>
-      <div class="edu-card">
-        <div class="school">Université Paris-Est Créteil (UPEC)</div>
-        <h3>Licence SPI – Maintenance Industrielle</h3>
-        <div class="period">Septembre 2022 – Juillet 2025</div>
-        <p>Automatique, CAO, Probabilités & Statistiques, Gestion de Projets, Microcontrôleurs</p>
+      <div class="edu-card reveal">
+        <div class="edu-school">UPEC · Créteil</div>
+        <div class="edu-degree" data-key="ed2">BSc Industrial Engineering & Maintenance</div>
+        <div class="edu-period">September 2022 – July 2025</div>
+        <div class="edu-desc" data-key="ed2d">Control systems, CAD, Statistics, Project Management, Microcontrollers — where my love for machines and data began.</div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="projects">
-    <div class="section-title">Pro<span>jets</span></div>
-    <div class="section-divider"></div>
+<!-- PROJECTS -->
+<section id="projects" class="sw alt">
+  <div class="container">
+    <div class="s-label">What I've built</div>
+    <h2 class="s-title">Selected <span>Projects</span></h2>
+    <div class="s-bar"></div>
     <div class="projects-grid">
-
       <div class="project-card">
-        <div class="project-emoji">🏀</div>
-        <h3>Scraping & Analyse NBA</h3>
-        <p>Scraping des salaires (HoopsHype) et des stats (NBA Stuffer). Croisement des deux sources pour analyser la <strong>relation entre rémunération et performance sportive</strong> — sous-payé, surpayé, meilleur rapport qualité/prix ?</p>
-        <div class="tags"><span class="tag">Python</span><span class="tag">Web Scraping</span><span class="tag">Pandas</span><span class="tag">JSON / CSV</span><span class="tag">Onyxia</span><span class="tag">GitHub</span></div>
-        <br>
-        <a href="https://github.com/ycoj2309/project-nba-scraping" target="_blank" class="btn" style="font-size:0.82rem; padding:0.5rem 1.2rem;">🔗 Voir sur GitHub</a>
+        <div class="proj-num">01</div>
+        <div class="proj-emoji">🏀</div>
+        <div class="proj-title" data-key="p1t">NBA Scraping & Performance Analysis</div>
+        <p class="proj-desc" data-key="p1d">Scraped salaries from HoopsHype and stats from NBA Stuffer. Cross-referenced both datasets to analyze the relationship between player pay and on-court performance — who's underpaid, overpaid, or the best value in the league?</p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">Web Scraping</span><span class="tag">JSON/CSV</span><span class="tag">Onyxia</span></div>
+        <a href="https://github.com/ycoj2309/project-nba-scraping" target="_blank" class="proj-link">→ View on GitHub</a>
       </div>
-
       <div class="project-card">
-        <div class="project-emoji">✅</div>
-        <h3>TodoMaking – Assistant IA de tâches</h3>
-        <p>Agent IA spécialisé dans l'<strong>extraction et l'organisation de tâches professionnelles</strong> à partir de documents variés : emails, comptes-rendus, rapports. Transforme des documents bruts en plans d'action exploitables.</p>
-        <div class="tags"><span class="tag">Dust</span><span class="tag">IA Générative</span><span class="tag">Automatisation</span><span class="tag">Gmail</span><span class="tag">No-code</span></div>
-        <br>
-        <a href="https://www.linkedin.com/feed/update/urn:li:activity:7420737202772512768/" target="_blank" class="btn" style="font-size:0.82rem; padding:0.5rem 1.2rem;">🔗 Voir sur LinkedIn</a>
+        <div class="proj-num">02</div>
+        <div class="proj-emoji">✅</div>
+        <div class="proj-title" data-key="p2t">TodoMaking — AI Task Extraction Agent</div>
+        <p class="proj-desc" data-key="p2d">Built an AI agent that extracts and organizes professional tasks from any document — emails, meeting notes, reports, operational guidelines. Turns raw, unstructured text into clear and actionable to-do lists.</p>
+        <div class="tags"><span class="tag">Dust</span><span class="tag">Generative AI</span><span class="tag">Gmail</span><span class="tag">No-code</span><span class="tag">Automation</span></div>
+        <a href="https://www.linkedin.com/feed/update/urn:li:activity:7420737202772512768/" target="_blank" class="proj-link">→ View on LinkedIn</a>
       </div>
-
       <div class="project-card">
-        <div class="project-emoji">🏭</div>
-        <h3>Migration GMAO – Safran</h3>
-        <p>Structuration de +2000 organes industriels et automatisation de l'import via CARL Loader (.csv/.xml). Tableaux de bord Power BI pour le suivi en temps réel des équipements.</p>
-        <div class="tags"><span class="tag">CARL Source</span><span class="tag">Power BI</span><span class="tag">VBA</span><span class="tag">Excel</span></div>
+        <div class="proj-num">03</div>
+        <div class="proj-emoji">🏭</div>
+        <div class="proj-title" data-key="p3t">GMAO Migration — Safran</div>
+        <p class="proj-desc" data-key="p3d">Led the full migration of 2000+ industrial assets from OptiMaint to CARL Source. Automated data import pipelines (.csv/.xml), built Power BI dashboards for real-time equipment monitoring across the production site.</p>
+        <div class="tags"><span class="tag">CARL Source</span><span class="tag">Power BI</span><span class="tag">Excel VBA</span><span class="tag">Data Migration</span></div>
       </div>
-
       <div class="project-card">
-        <div class="project-emoji">📊</div>
-        <h3>Dashboard Financier – BNP Paribas Cardif</h3>
-        <p>Création d'un tableau de bord de suivi des indicateurs financiers pour la Direction Production des comptes, avec automatisation du reporting.</p>
-        <div class="tags"><span class="tag">Excel</span><span class="tag">VBA</span><span class="tag">Reporting</span><span class="tag">Contrôle de gestion</span></div>
+        <div class="proj-num">04</div>
+        <div class="proj-emoji">📊</div>
+        <div class="proj-title" data-key="p4t">Financial Dashboard — BNP Paribas Cardif</div>
+        <p class="proj-desc" data-key="p4d">Designed and built a comprehensive financial KPI tracking dashboard for the Accounts Production Division. Automated reporting workflows and significantly reduced manual workload.</p>
+        <div class="tags"><span class="tag">Excel</span><span class="tag">VBA</span><span class="tag">Financial Reporting</span><span class="tag">KPIs</span></div>
       </div>
-
       <div class="project-card">
-        <div class="project-emoji">💻</div>
-        <h3>Portfolio Web</h3>
-        <p>Développement de ce portfolio personnel en HTML/CSS pur, conçu avec l'aide de l'IA et hébergé gratuitement sur GitHub Pages.</p>
-        <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">GitHub Pages</span><span class="tag">Vibe Coding</span></div>
-        <br>
-        <a href="https://github.com/ycoj2309/portfolio-lab" target="_blank" class="btn" style="font-size:0.82rem; padding:0.5rem 1.2rem;">🔗 Voir sur GitHub</a>
+        <div class="proj-num">05</div>
+        <div class="proj-emoji">💻</div>
+        <div class="proj-title" data-key="p5t">This Portfolio — Vibe-Coded with AI</div>
+        <p class="proj-desc" data-key="p5d">Designed and coded this portfolio in pure HTML, CSS & JavaScript — with AI assistance. Features: particle network animation, custom cursor, typewriter effect, animated counters, skill bars, bilingual EN/FR toggle. Zero frameworks.</p>
+        <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span><span class="tag">GitHub Pages</span><span class="tag">Vibe Coding</span></div>
+        <a href="https://github.com/ycoj2309/portfolio-lab" target="_blank" class="proj-link">→ View on GitHub</a>
       </div>
-
     </div>
-  </section>
+  </div>
+</section>
 
-  <section id="contact">
-    <div class="section-title">Me <span>contacter</span></div>
-    <div class="section-divider"></div>
-    <p>Disponible pour une alternance, un CDD ou CDI. N'hésitez pas à me contacter !</p>
-    <div class="contact-links">
-      <a href="mailto:jahdielk134@gmail.com" class="btn">📧 jahdielk134@gmail.com</a>
-      <a href="https://www.linkedin.com/in/jahdiel-kinvi" target="_blank" class="btn btn-outline">🔗 LinkedIn</a>
+<!-- CONTACT -->
+<section id="contact" class="sw">
+  <div class="container">
+    <div class="contact-box reveal">
+      <div class="s-label" style="margin-bottom:1rem" data-key="co-lbl">Get in touch</div>
+      <h2 class="c-title">Let's build something <span style="color:var(--blue)">great</span>.</h2>
+      <p class="c-sub" data-key="co-sub">Open to alternance, CDD, CDI or freelance missions. Based in Paris area — mobile across Europe & North America.</p>
+      <div class="c-links">
+        <a href="mailto:jahdielk134@gmail.com" class="btn-p">📧 jahdielk134@gmail.com</a>
+        <a href="https://www.linkedin.com/in/jahdiel-k/" target="_blank" class="btn-o">🔗 LinkedIn</a>
+        <a href="https://github.com/ycoj2309" target="_blank" class="btn-o">🐙 GitHub</a>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <footer>
-    <p>© 2026 Jahdiel Kinvi — Conçu avec ❤️ et beaucoup de ☕</p>
-  </footer>
+<footer>
+  <p>© 2026 Jahdiel Kinvi · Built with ❤️ + AI · <span>Champigny-sur-Marne → Paris → World</span></p>
+</footer>
 
+<script>
+// ── TRANSLATIONS ──
+const T = {
+  en: {
+    'nav-about':'About','nav-skills':'Skills','nav-exp':'Experience','nav-proj':'Projects','nav-contact':'Contact',
+    'hero-p':'Engineer turned Data & AI specialist. I transform raw data into decisions, industrial systems into intelligent workflows, and complex problems into clear strategies. MSc AI Applied to Business · Eugenia School, Paris.',
+    'hero-cta1':'Get in touch','hero-cta2':'View projects',
+    'card-sub':'MSc AI Applied to Business',
+    's1':'Records Structured','s2':'Accounting Entries','s3':'Projects Led',
+    'c-loc':'Location','c-avail':'Availability','c-avail-v':'Open to opportunities','c-mob':'Mobility','c-mob-v':'Europe & North America','c-lang':'Languages',
+    'pt1':'🏀 Basketball Captain','pt2':'📚 Proust · Coates','pt3':'⚽ FC Barcelona',
+    'ct1':'Years Experience','ct2':'Key Projects','ct3':'Corrective Action Success','ct4':'Fortune 500 Companies',
+    'a-p1':"I'm a bridge between two worlds: the <strong>precision of industrial engineering</strong> and the <strong>intelligence of data science</strong>. My journey started with machines — understanding how they break, how to maintain them, how to optimize them. I now apply that same mindset to data, AI, and business strategy.",
+    'a-p2':"At <strong>Safran</strong>, I led the migration of 2000+ industrial assets into a new GMAO system. At <strong>BNP Paribas Cardif</strong>, I built financial dashboards and supported PMO governance across 7 strategic projects. Every role taught me that the best solutions sit at the intersection of technical rigor and human understanding.",
+    'a-p3':"Off-screen, you'll find me captaining my basketball team in Champigny-sur-Marne, reading Proust or Ta-Nehisi Coates, or watching FC Barcelona prove that beautiful systems win. My NBA scraping project isn't a coincidence — data and sport have always spoken the same language to me.",
+    'f1h':'Team Captain','f1p':'Leading the basketball team of Champigny-sur-Marne. Leadership on and off the court.',
+    'f2h':'Data Storyteller','f2p':'Turning raw numbers into insights. Scraping NBA data just for the love of it.',
+    'f3h':'Avid Reader','f3p':'Proust for depth. Ta-Nehisi Coates for perspective. Reading shapes my thinking.',
+    'f4h':'AI Builder','f4p':'Building AI agents with Dust that solve real workplace problems. No hype, just utility.',
+    'e1r':'GMAO Pilot & Manager','e1-1':'Led GMAO migration (OptiMaint → CARL Source) — structured 2000+ industrial assets','e1-2':'Automated data import via CARL Loader (.csv/.xml) — full traceability','e1-3':'Built Excel VBA macros & Power BI dashboards for real-time equipment monitoring','e1-4':'Drove 5S & HSE audit score from 0.16 to 3/5','e1-5':'95% corrective action success rate — full PMO governance support',
+    'e2r':'Assistant Accountant','e2-1':'Reviewed and controlled accounts outside standard perimeter','e2-2':'Built a financial KPI tracking dashboard',
+    'e3r':'Mandate & Control Management Assistant','e3-1':'Processed OSTs for 7 main clients + 4 backup clients','e3-2':'Produced statistical reports with 85–100% completion rate','e3-3':'~1500 accounting entries processed',
+    'e4r':'Cross-Functional Coordination Assistant – CIO Office','e4-1':'PMO support across 7 strategic technical projects','e4-2':'Prepared steering committee materials','e4-3':'Contributed to project governance and value communication',
+    'ed1':'MSc AI Applied to Business','ed1p':'Since January 2026','ed1d':'Data visualization, Coding, No-code, AI Strategy, Finance, Marketing — bridging AI and business impact.',
+    'ed2':'BSc Industrial Engineering & Maintenance','ed2d':'Control systems, CAD, Statistics, Project Management, Microcontrollers — where my love for machines and data began.',
+    'p1t':'NBA Scraping & Performance Analysis','p1d':"Scraped salaries from HoopsHype and stats from NBA Stuffer. Cross-referenced both datasets to analyze the relationship between player pay and on-court performance — who's underpaid, overpaid, or the best value in the league?",
+    'p2t':'TodoMaking — AI Task Extraction Agent','p2d':'Built an AI agent that extracts and organizes professional tasks from any document — emails, meeting notes, reports, operational guidelines. Turns raw, unstructured text into clear and actionable to-do lists.',
+    'p3t':'GMAO Migration — Safran','p3d':'Led the full migration of 2000+ industrial assets from OptiMaint to CARL Source. Automated data import pipelines (.csv/.xml), built Power BI dashboards for real-time equipment monitoring across the production site.',
+    'p4t':'Financial Dashboard — BNP Paribas Cardif','p4d':'Designed and built a comprehensive financial KPI tracking dashboard for the Accounts Production Division. Automated reporting workflows and significantly reduced manual workload.',
+    'p5t':'This Portfolio — Vibe-Coded with AI','p5d':'Designed and coded this portfolio in pure HTML, CSS & JavaScript — with AI assistance. Features: particle network animation, custom cursor, typewriter effect, animated counters, skill bars, bilingual EN/FR toggle. Zero frameworks.',
+    'co-lbl':'Get in touch','co-sub':'Open to alternance, CDD, CDI or freelance missions. Based in Paris area — mobile across Europe & North America.'
+  },
+  fr: {
+    'nav-about':'À propos','nav-skills':'Compétences','nav-exp':'Expériences','nav-proj':'Projets','nav-contact':'Contact',
+    'hero-p':"Ingénieur reconverti en spécialiste Data & IA. Je transforme des données brutes en décisions, des systèmes industriels en workflows intelligents, et des problèmes complexes en stratégies claires. MSc IA Appliquée aux Affaires · Eugenia School, Paris.",
+    'hero-cta1':'Me contacter','hero-cta2':'Voir les projets',
+    'card-sub':'MSc IA Appliquée aux Affaires',
+    's1':'Organes structurés','s2':'Saisies comptables','s3':'Projets pilotés',
+    'c-loc':'Localisation','c-avail':'Disponibilité','c-avail-v':'Ouvert aux opportunités','c-mob':'Mobilité','c-mob-v':'Europe & Amérique du Nord','c-lang':'Langues',
+    'pt1':'🏀 Capitaine de basket','pt2':'📚 Proust · Coates','pt3':'⚽ FC Barcelone',
+    'ct1':"Ans d'expérience",'ct2':'Projets clés','ct3':'Actions correctives réussies','ct4':'Grandes entreprises',
+    'a-p1':"Je suis un pont entre deux mondes : la <strong>précision de l'ingénierie industrielle</strong> et l'<strong>intelligence de la data science</strong>. Mon parcours a commencé avec les machines — comprendre comment elles tombent en panne, les maintenir, les optimiser. J'applique maintenant ce même état d'esprit à la data, à l'IA et à la stratégie business.",
+    'a-p2':"Chez <strong>Safran</strong>, j'ai piloté la migration de 2000+ actifs industriels. Chez <strong>BNP Paribas Cardif</strong>, j'ai créé des tableaux de bord financiers et soutenu la gouvernance PMO sur 7 projets stratégiques. Chaque rôle m'a appris que les meilleures solutions naissent à l'intersection de la rigueur technique et de la compréhension humaine.",
+    'a-p3':"En dehors du travail, je suis capitaine de mon équipe de basket à Champigny-sur-Marne, passionné de lecture (Proust, Ta-Nehisi Coates) ou à regarder le FC Barcelone prouver que les beaux systèmes gagnent. Mon projet de scraping NBA n'est pas un hasard — la data et le sport ont toujours parlé le même langage.",
+    'f1h':'Capitaine d\'équipe','f1p':'Capitaine de l\'équipe de basket de Champigny-sur-Marne. Leadership sur et hors du terrain.',
+    'f2h':'Data Storyteller','f2p':'Transformer des chiffres bruts en insights. Scraper des données NBA juste pour le plaisir.',
+    'f3h':'Lecteur passionné','f3p':'Proust pour la profondeur. Ta-Nehisi Coates pour la perspective. La lecture façonne ma pensée.',
+    'f4h':'Constructeur IA','f4p':'Créer des agents IA avec Dust qui résolvent de vrais problèmes. Pas de hype, juste de l\'utilité.',
+    'e1r':'Pilote et Gestionnaire GMAO','e1-1':'Pilotage de la migration GMAO (OptiMaint → CARL Source) — structuration de 2000+ organes','e1-2':'Import automatisé via CARL Loader (.csv/.xml) — traçabilité complète','e1-3':'Macros Excel VBA & tableaux de bord Power BI pour le suivi en temps réel','e1-4':'Amélioration des audits 5S & HSE de 0,16 à 3/5','e1-5':"95% d'actions correctives réussies — appui gouvernance & PMO",
+    'e2r':'Assistant Comptable','e2-1':'Contrôle des comptes hors périmètre standard','e2-2':'Création d\'un tableau de bord de suivi des indicateurs financiers',
+    'e3r':'Gestionnaire Assistant des Mandats et Contrôle','e3-1':'Traitement des OST sur 7 clients principaux + 4 en back-up','e3-2':'Reportings statistiques avec 85–100% de complétion','e3-3':'~1500 saisies comptables réalisées',
+    'e4r':'Assistant Coordination Transverse – CIO Office','e4-1':'Appui PMO sur 7 projets techniques stratégiques','e4-2':'Préparation de supports pour les comités de pilotage','e4-3':'Contribution à la gouvernance et valorisation des projets',
+    'ed1':'MSc IA Appliquée aux Affaires','ed1p':'Depuis janvier 2026','ed1d':"Visualisation de données, Code, No-code, Stratégie IA, Finance, Marketing — relier l'IA à l'impact business.",
+    'ed2':'Licence SPI – Maintenance Industrielle','ed2d':"Automatique, CAO, Statistiques, Gestion de projets, Microcontrôleurs — là où mon amour pour les machines et la data a commencé.",
+    'p1t':'Scraping & Analyse NBA','p1d':"Scraping des salaires (HoopsHype) et des stats (NBA Stuffer). Croisement des deux sources pour analyser la relation entre rémunération et performance sportive — sous-payé, surpayé, meilleur rapport qualité/prix ?",
+    'p2t':'TodoMaking — Agent IA d\'extraction de tâches','p2d':"Agent IA spécialisé dans l'extraction et l'organisation de tâches professionnelles à partir de tout document — emails, comptes-rendus, rapports. Transforme du texte brut en plans d'action clairs.",
+    'p3t':'Migration GMAO — Safran','p3d':'Pilotage de la migration complète de 2000+ organes industriels d\'OptiMaint vers CARL Source. Automatisation des imports (.csv/.xml) et tableaux de bord Power BI pour le suivi en temps réel.',
+    'p4t':'Dashboard Financier — BNP Paribas Cardif','p4d':'Création d\'un tableau de bord complet de suivi des indicateurs financiers pour la Direction Production des comptes. Automatisation du reporting.',
+    'p5t':'Ce Portfolio — Vibe Codé avec l\'IA','p5d':'Conçu et développé en HTML, CSS & JavaScript pur — avec assistance IA. Animations de particules, curseur personnalisé, typewriter, compteurs animés, barres de compétences, toggle bilingue EN/FR. Zéro framework.',
+    'co-lbl':'Prenons contact','co-sub':'Disponible pour alternance, CDD, CDI ou missions freelance. Basé en Île-de-France, mobile Europe & Amérique du Nord.'
+  }
+};
+
+let currentLang = 'en';
+
+function toggleLang() {
+  currentLang = currentLang === 'en' ? 'fr' : 'en';
+  document.getElementById('l-en').className = currentLang === 'en' ? 'active' : '';
+  document.getElementById('l-fr').className = currentLang === 'fr' ? 'active' : '';
+  document.querySelectorAll('[data-key]').forEach(el => {
+    const k = el.getAttribute('data-key');
+    if (T[currentLang][k]) el.innerHTML = T[currentLang][k];
+  });
+  // Update typewriter phrases
+  twPhrases = currentLang === 'en' ? twPhrasesEN : twPhrasesFR;
+}
+
+// ── CANVAS PARTICLES ──
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let pts = [];
+
+function resize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+
+function initPts() {
+  pts = [];
+  const n = Math.floor((canvas.width * canvas.height) / 14000);
+  for (let i = 0; i < n; i++) {
+    pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25, r: Math.random() * 1.5 + 0.4 });
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  pts.forEach((p, i) => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,212,255,0.6)'; ctx.fill();
+    for (let j = i + 1; j < pts.length; j++) {
+      const dx = p.x - pts[j].x, dy = p.y - pts[j].y, d = Math.sqrt(dx*dx+dy*dy);
+      if (d < 110) {
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(pts[j].x, pts[j].y);
+        ctx.strokeStyle = `rgba(0,212,255,${0.12*(1-d/110)})`; ctx.lineWidth = 0.5; ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(draw);
+}
+resize(); initPts(); draw();
+window.addEventListener('resize', () => { resize(); initPts(); });
+
+// ── CUSTOM CURSOR ──
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx - 5 + 'px'; cur.style.top = my - 5 + 'px';
+});
+(function animRing() {
+  rx += (mx - rx - 19) * 0.14; ry += (my - ry - 19) * 0.14;
+  ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,.fun-card,.skill-cat,.project-card').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.style.transform = 'scale(2.2)'; ring.style.transform = 'scale(1.5)'; ring.style.borderColor = 'rgba(0,212,255,0.9)'; });
+  el.addEventListener('mouseleave', () => { cur.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(0,212,255,0.5)'; });
+});
+
+// ── TYPEWRITER ──
+const twPhrasesEN = ['Data & AI Specialist.','Industrial Engineer.','PMO & Project Leader.','Basketball Captain.','NBA Data Analyst (hobby).','Always building something.'];
+const twPhrasesFR = ['Spécialiste Data & IA.','Ingénieur Industriel.','Chef de Projet PMO.','Capitaine de Basket.','Analyste NBA (passion).','Toujours en train de créer.'];
+let twPhrases = twPhrasesEN;
+let pi = 0, ci = 0, del = false;
+const twEl = document.getElementById('tw');
+function tw() {
+  const ph = twPhrases[pi];
+  if (!del) {
+    twEl.textContent = ph.slice(0, ++ci);
+    if (ci === ph.length) { del = true; setTimeout(tw, 1800); return; }
+  } else {
+    twEl.textContent = ph.slice(0, --ci);
+    if (ci === 0) { del = false; pi = (pi + 1) % twPhrases.length; }
+  }
+  setTimeout(tw, del ? 38 : 75);
+}
+tw();
+
+// ── COUNTER ANIMATION ──
+function animCounter(el) {
+  const target = +el.getAttribute('data-target');
+  const suffix = el.getAttribute('data-suffix') || '';
+  const dur = 1600, start = performance.now();
+  (function upd(now) {
+    const prog = Math.min((now - start) / dur, 1);
+    el.textContent = Math.floor(prog * target) + suffix;
+    if (prog < 1) requestAnimationFrame(upd);
+    else el.textContent = target + suffix;
+  })(performance.now());
+}
+
+// ── INTERSECTION OBSERVER ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('visible');
+    e.target.querySelectorAll('.bar-fill').forEach(b => { b.style.width = b.getAttribute('data-w') + '%'; });
+    e.target.querySelectorAll('.counter').forEach(animCounter);
+    obs.unobserve(e.target);
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.reveal, .tl-item, .project-card, .skill-cat').forEach(el => obs.observe(el));
+
+// Stagger project cards
+document.querySelectorAll('.project-card').forEach((c, i) => { c.style.transitionDelay = i * 0.08 + 's'; });
+</script>
 </body>
 </html>
