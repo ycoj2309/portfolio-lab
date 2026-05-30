@@ -1,0 +1,2224 @@
+<!doctype html>
+<html lang="fr" data-theme="museum">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cabinet Kinvi — Musée numérique des projets data &amp; AI</title>
+  <meta name="description" content="Portfolio interactif de Jahdiel Kinvi présenté comme un musée numérique. Cinq vitrines, cinq projets data &amp; AI explorables au clic." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    /* ============================================================
+       MUSEUM TOKENS — Cabinet de nuit
+       ============================================================ */
+    :root {
+      /* Palette : marbre sombre + or muséographique + lumière de vitrine */
+      --vault-deep: #08090c;
+      --vault-base: #0d0f14;
+      --vault-elev: #14171f;
+      --vault-card: #1a1d27;
+      --vault-line: rgba(212, 195, 145, 0.10);
+      --vault-line-2: rgba(212, 195, 145, 0.22);
+
+      --ink: #ece7d8;
+      --ink-soft: #b9b3a3;
+      --ink-mute: #7d786a;
+      --ink-faint: #4a4842;
+
+      --gold: #d4c391;       /* étiquette de musée, or pâle */
+      --gold-warm: #e6cf8f;
+      --beam: #fef3c7;       /* lumière de spot */
+      --signal: #5bc4e8;     /* clin d'œil au portfolio précédent */
+      --acid: #b8e62f;
+      --rust: #c97b56;
+
+      /* Typography */
+      --serif: 'Cormorant Garamond', 'Times New Roman', serif;
+      --sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+      /* Scales */
+      --t-mono-xs: clamp(0.68rem, 0.65rem + 0.13vw, 0.76rem);
+      --t-mono-s:  clamp(0.78rem, 0.75rem + 0.15vw, 0.86rem);
+      --t-body:    clamp(0.95rem, 0.90rem + 0.20vw, 1.05rem);
+      --t-lead:    clamp(1.10rem, 1.02rem + 0.40vw, 1.28rem);
+      --t-h3:      clamp(1.40rem, 1.25rem + 0.75vw, 1.70rem);
+      --t-h2:      clamp(2.00rem, 1.70rem + 1.50vw, 2.80rem);
+      --t-h1:      clamp(3.20rem, 2.40rem + 4.00vw, 5.20rem);
+      --t-display: clamp(4.50rem, 3.20rem + 6.50vw, 8.00rem);
+
+      /* Spacing & radii */
+      --r-s: 4px;
+      --r-m: 10px;
+      --r-l: 16px;
+      --r-pill: 999px;
+
+      --ease: cubic-bezier(.22,.61,.36,1);
+      --ease-spring: cubic-bezier(.34,1.4,.64,1);
+    }
+
+    /* ============================================================
+       BASE
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+
+    body {
+      font-family: var(--sans);
+      font-size: var(--t-body);
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--vault-base);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      cursor: auto; /* curseur natif simple */
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; color: inherit; background: transparent; border: 0; cursor: pointer; }
+    img, svg, canvas { display: block; max-width: 100%; }
+    ::selection { background: var(--gold); color: var(--vault-deep); }
+
+    /* ============================================================
+       BACKGROUND ATMOSPHÈRE
+       ============================================================ */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 35%, rgba(212,195,145,0.05), transparent 70%),
+        radial-gradient(ellipse 80% 60% at 50% 100%, rgba(91,196,232,0.04), transparent 60%),
+        var(--vault-base);
+      pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; z-index: 1;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+      opacity: .25;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+    main, header, .stage { position: relative; z-index: 2; }
+
+    /* ============================================================
+       HEADER / NAV — fine ligne dorée
+       ============================================================ */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 1.25rem clamp(1.25rem, 4vw, 2.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      background: linear-gradient(to bottom, rgba(13,15,20,.92), rgba(13,15,20,.45) 70%, transparent);
+      backdrop-filter: blur(8px);
+    }
+    .nav__brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: .55rem;
+    }
+    .nav__brand-mark {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.45rem;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .nav__brand-sub {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      color: var(--gold);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      padding: .15rem .5rem;
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-pill);
+    }
+    .nav__right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .nav__right .dot { width: 6px; height: 6px; border-radius: 50%; background: #5bd97e; box-shadow: 0 0 10px #5bd97e; display: inline-block; margin-right: .55rem; vertical-align: middle; animation: blink 2.4s var(--ease) infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+    .lang-toggle {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .15em;
+      padding: .4rem .8rem;
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-pill);
+      color: var(--gold);
+      transition: background .25s, color .25s;
+    }
+    .lang-toggle:hover { background: var(--gold); color: var(--vault-deep); }
+    .lang-toggle .on { color: var(--gold); }
+    .lang-toggle .off { color: var(--ink-faint); }
+
+    @media (max-width: 720px) {
+      .nav__right > .nav__hours { display: none; }
+    }
+
+    /* ============================================================
+       SECTION 1 : ENTRÉE DU MUSÉE
+       ============================================================ */
+    .entrance {
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding: 8rem clamp(1.25rem, 4vw, 2.5rem) 4rem;
+      position: relative;
+    }
+    .entrance__inner {
+      max-width: 1320px;
+      width: 100%;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: clamp(2rem, 6vw, 5rem);
+      align-items: center;
+    }
+    @media (max-width: 920px) {
+      .entrance__inner { grid-template-columns: 1fr; }
+    }
+
+    .plate {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding: .5rem 1rem;
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-pill);
+      background: rgba(212,195,145,0.04);
+    }
+    .plate::before {
+      content: '';
+      width: 18px; height: 1px;
+      background: var(--gold);
+    }
+
+    .entrance__title {
+      font-family: var(--serif);
+      font-size: var(--t-display);
+      line-height: 0.92;
+      letter-spacing: -0.025em;
+      margin: 1.2rem 0 .25rem;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .entrance__title .it { font-style: italic; color: var(--gold); }
+    .entrance__sub {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: var(--t-h3);
+      color: var(--ink-soft);
+      margin: 0 0 2rem;
+      max-width: 24ch;
+      line-height: 1.2;
+    }
+
+    .entrance__lede {
+      max-width: 52ch;
+      color: var(--ink-soft);
+      font-size: var(--t-lead);
+      margin: 0 0 2rem;
+      line-height: 1.55;
+    }
+    .entrance__lede strong { color: var(--ink); font-weight: 500; }
+
+    .entrance__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      padding: 1rem 1.75rem;
+      border-radius: var(--r-pill);
+      font-family: var(--sans);
+      font-size: var(--t-body);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      transition: transform .3s var(--ease-spring), background .3s, color .3s, box-shadow .3s;
+    }
+    .btn-cta--gold {
+      background: var(--gold);
+      color: var(--vault-deep);
+      box-shadow: 0 12px 38px -12px rgba(212,195,145,.6);
+    }
+    .btn-cta--gold:hover { transform: translateY(-2px); box-shadow: 0 18px 48px -10px rgba(212,195,145,.8); }
+    .btn-cta--ghost {
+      border: 1px solid var(--vault-line-2);
+      color: var(--ink);
+    }
+    .btn-cta--ghost:hover { background: var(--vault-card); border-color: var(--gold); }
+    .btn-cta .arrow { transition: transform .3s var(--ease); }
+    .btn-cta:hover .arrow { transform: translate(2px, -2px); }
+
+    /* Side card — informations pratiques */
+    .info-card {
+      background: linear-gradient(180deg, var(--vault-card) 0%, var(--vault-elev) 100%);
+      border: 1px solid var(--vault-line);
+      border-radius: var(--r-l);
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: .6;
+    }
+    .info-card__h {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 1.5rem;
+    }
+    .info-rows { display: grid; gap: 1rem; }
+    .info-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      padding-bottom: .85rem;
+      border-bottom: 1px dashed var(--vault-line);
+    }
+    .info-row:last-child { border-bottom: 0; padding-bottom: 0; }
+    .info-row__k {
+      font-family: var(--mono);
+      font-size: var(--t-mono-s);
+      color: var(--ink-mute);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .info-row__v {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+    .info-row__v em { color: var(--gold); font-style: italic; }
+    .info-foot {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--vault-line);
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      color: var(--ink-faint);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-foot .stamp {
+      padding: .25rem .55rem;
+      border: 1px dashed var(--gold);
+      color: var(--gold);
+      border-radius: 3px;
+      transform: rotate(-2deg);
+    }
+
+    /* Marche d'escalier (visual hint of "entering") */
+    .scroll-hint {
+      position: absolute;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .65rem;
+    }
+    .scroll-hint__line {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, transparent, var(--gold));
+      animation: drop 2s var(--ease) infinite;
+    }
+    @keyframes drop {
+      0% { transform: scaleY(0); transform-origin: top; }
+      50% { transform: scaleY(1); transform-origin: top; }
+      51% { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+
+    /* ============================================================
+       STAGE — la salle 3D
+       ============================================================ */
+    .stage {
+      position: relative;
+      height: 100vh;
+      min-height: 640px;
+      width: 100%;
+      overflow: hidden;
+      background: radial-gradient(ellipse 70% 50% at 50% 60%, rgba(212,195,145,0.04), transparent 70%), var(--vault-deep);
+      border-top: 1px solid var(--vault-line);
+      border-bottom: 1px solid var(--vault-line);
+    }
+    #stage-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Stage UI overlay */
+    .stage__ui {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .stage__title {
+      position: absolute;
+      top: clamp(1.5rem, 4vw, 3rem);
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    .stage__title .room {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: inline-block;
+      padding: .35rem 1rem;
+      border-top: 1px solid var(--vault-line-2);
+      border-bottom: 1px solid var(--vault-line-2);
+    }
+    .stage__title .name {
+      display: block;
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: var(--t-h2);
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      margin-top: .65rem;
+      line-height: 1.05;
+    }
+
+    .stage__hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      pointer-events: none;
+      text-align: center;
+      animation: fadeup 1s var(--ease) .8s both;
+    }
+    @keyframes fadeup {
+      from { opacity: 0; transform: translate(-50%, 12px); }
+      to   { opacity: 1; transform: translate(-50%, 0); }
+    }
+    .stage__hint .arrows { display: inline-block; margin: 0 .4rem; color: var(--gold); }
+
+    /* Hover label — tooltip floating on the artefact */
+    .stage__label {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+      transform: translate(-50%, calc(-100% - 12px));
+      padding: .55rem .85rem;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-s);
+      font-family: var(--mono);
+      font-size: var(--t-mono-s);
+      color: var(--gold);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .25s var(--ease);
+      z-index: 3;
+      box-shadow: 0 12px 30px -10px rgba(0,0,0,.6);
+    }
+    .stage__label.on { opacity: 1; }
+    .stage__label::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 8px; height: 8px;
+      background: var(--vault-deep);
+      border-right: 1px solid var(--vault-line-2);
+      border-bottom: 1px solid var(--vault-line-2);
+    }
+    .stage.dragging { cursor: grabbing; }
+    .stage:not(.dragging) { cursor: grab; }
+
+    /* Mini-map / room indicator */
+    .stage__map {
+      position: absolute;
+      right: clamp(1rem, 2vw, 2rem);
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      pointer-events: auto;
+      z-index: 3;
+    }
+    .stage__map .pin {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 1px solid var(--vault-line-2);
+      background: transparent;
+      transition: background .3s, border-color .3s, transform .3s;
+      position: relative;
+    }
+    .stage__map .pin:hover { border-color: var(--gold); transform: scale(1.2); }
+    .stage__map .pin.active { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 12px rgba(212,195,145,.5); }
+    .stage__map .pin .tip {
+      position: absolute;
+      right: calc(100% + .85rem);
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .25s;
+      pointer-events: none;
+    }
+    .stage__map .pin:hover .tip,
+    .stage__map .pin.active .tip { opacity: 1; }
+
+    /* ============================================================
+       MUSEUM PLAQUE — sticker minimal under the room (stats)
+       ============================================================ */
+    .plaque-strip {
+      padding: 5rem clamp(1.25rem, 4vw, 2.5rem) 4rem;
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+    .plaque-strip__hd {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: end;
+      gap: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--vault-line);
+      margin-bottom: 2.5rem;
+    }
+    .plaque-strip__num {
+      font-family: var(--mono);
+      font-size: var(--t-mono-s);
+      color: var(--gold);
+      letter-spacing: .2em;
+    }
+    .plaque-strip__title {
+      font-family: var(--serif);
+      font-size: var(--t-h2);
+      letter-spacing: -0.02em;
+      margin: 0;
+      font-weight: 400;
+      line-height: 1;
+    }
+    .plaque-strip__title em { color: var(--gold); font-style: italic; }
+    .plaque-strip__meta {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      color: var(--ink-mute);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      text-align: right;
+    }
+
+    .plaque-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--vault-line);
+      border-bottom: 1px solid var(--vault-line);
+    }
+    @media (max-width: 720px) {
+      .plaque-grid { grid-template-columns: 1fr 1fr; }
+    }
+    .plaque {
+      padding: 1.75rem 1.5rem;
+      border-right: 1px solid var(--vault-line);
+      position: relative;
+    }
+    .plaque:last-child { border-right: 0; }
+    @media (max-width: 720px) {
+      .plaque:nth-child(2) { border-right: 0; }
+      .plaque:nth-child(1), .plaque:nth-child(2) { border-bottom: 1px solid var(--vault-line); }
+    }
+    .plaque__num {
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 3vw, 3rem);
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: baseline;
+      gap: .15ch;
+    }
+    .plaque__num .suf { font-size: 0.55em; color: var(--gold); margin-left: .2ch; }
+    .plaque__lab {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      color: var(--ink-mute);
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      margin-top: .65rem;
+    }
+
+    /* ============================================================
+       VITRINE MODAL (panel latéral)
+       ============================================================ */
+    .vitrine {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .vitrine__veil {
+      position: absolute;
+      inset: 0;
+      background: rgba(8,9,12,.6);
+      backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity .4s var(--ease);
+    }
+    .vitrine__panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(720px, 100%);
+      background: linear-gradient(180deg, var(--vault-card) 0%, var(--vault-elev) 100%);
+      border-left: 1px solid var(--vault-line-2);
+      transform: translateX(100%);
+      transition: transform .55s var(--ease);
+      overflow-y: auto;
+      box-shadow: -30px 0 60px -10px rgba(0,0,0,.6);
+    }
+    .vitrine.open { pointer-events: auto; }
+    .vitrine.open .vitrine__veil { opacity: 1; }
+    .vitrine.open .vitrine__panel { transform: translateX(0); }
+
+    .vitrine__close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line-2);
+      color: var(--ink-soft);
+      transition: background .25s, color .25s, transform .25s;
+      z-index: 2;
+    }
+    .vitrine__close:hover { background: var(--gold); color: var(--vault-deep); transform: rotate(90deg); }
+
+    .vitrine__inner { padding: 3rem clamp(1.5rem, 3vw, 2.5rem); }
+
+    .vitrine__num {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+    }
+    .vitrine__num::before { content: ''; width: 24px; height: 1px; background: var(--gold); }
+
+    .vitrine__title {
+      font-family: var(--serif);
+      font-size: var(--t-h1);
+      letter-spacing: -0.025em;
+      line-height: 0.95;
+      margin: .85rem 0 .35rem;
+      font-weight: 400;
+      color: var(--ink);
+    }
+    .vitrine__title em { color: var(--gold); font-style: italic; }
+
+    .vitrine__sub {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.25rem;
+      color: var(--ink-soft);
+      margin: 0 0 1.5rem;
+    }
+
+    .vitrine__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 2rem;
+    }
+    .vitrine__meta span {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: .35rem .65rem;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line);
+      border-radius: var(--r-pill);
+      color: var(--ink-soft);
+    }
+
+    .vitrine__lede {
+      font-family: var(--serif);
+      font-size: var(--t-lead);
+      color: var(--ink);
+      line-height: 1.5;
+      margin: 0 0 1.5rem;
+      font-weight: 500;
+    }
+
+    .vitrine__body p {
+      color: var(--ink-soft);
+      margin: 0 0 1rem;
+      line-height: 1.65;
+    }
+    .vitrine__body strong { color: var(--ink); font-weight: 500; }
+    .vitrine__body em { color: var(--gold); font-style: normal; font-family: var(--mono); }
+
+    .vitrine__h {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 2.5rem 0 1rem;
+      padding-bottom: .5rem;
+      border-bottom: 1px solid var(--vault-line);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: .75rem;
+    }
+    .metric-tile {
+      padding: 1rem 1.1rem;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line);
+      border-radius: var(--r-m);
+      transition: border-color .25s, transform .25s;
+    }
+    .metric-tile:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .metric-tile__v {
+      font-family: var(--serif);
+      font-size: 1.85rem;
+      line-height: 1;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: baseline;
+      gap: .1ch;
+    }
+    .metric-tile__v.gold { color: var(--gold); }
+    .metric-tile__v.signal { color: var(--signal); }
+    .metric-tile__v.acid { color: var(--acid); }
+    .metric-tile__v .suf { font-size: 0.55em; color: var(--ink-mute); margin-left: .2ch; }
+    .metric-tile__l {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--ink-mute);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-top: .5rem;
+    }
+
+    .gallery {
+      display: grid;
+      gap: .75rem;
+    }
+    .gallery img,
+    .gallery .gallery__svg {
+      width: 100%;
+      border-radius: var(--r-m);
+      border: 1px solid var(--vault-line);
+      background: var(--vault-deep);
+      transition: border-color .25s, transform .35s var(--ease);
+      cursor: zoom-in;
+    }
+    .gallery img:hover,
+    .gallery .gallery__svg:hover { border-color: var(--gold); transform: scale(1.01); }
+
+    .stack-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+    }
+    .stack-list span {
+      font-family: var(--mono);
+      font-size: var(--t-mono-s);
+      padding: .35rem .7rem;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line);
+      border-radius: var(--r-pill);
+      color: var(--ink-soft);
+    }
+
+    .vitrine__cta {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .vitrine__cta .btn-cta { padding: .85rem 1.4rem; font-size: 0.95rem; }
+
+    /* Lightbox for image zoom */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(8,9,12,.95);
+      display: grid;
+      place-items: center;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s var(--ease);
+    }
+    .lightbox.on { opacity: 1; pointer-events: auto; }
+    .lightbox img {
+      max-width: min(95vw, 1400px);
+      max-height: 92vh;
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-m);
+      box-shadow: 0 30px 80px -10px rgba(0,0,0,.7);
+    }
+    .lightbox__close {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line-2);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .lightbox__close:hover { background: var(--gold); color: var(--vault-deep); }
+
+    /* ============================================================
+       CONTACT WING
+       ============================================================ */
+    .wing {
+      padding: 5rem clamp(1.25rem, 4vw, 2.5rem);
+      max-width: 1320px;
+      margin: 0 auto;
+    }
+    .wing__inner {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 3rem;
+      padding: 3rem;
+      background: linear-gradient(135deg, var(--vault-card) 0%, var(--vault-elev) 100%);
+      border: 1px solid var(--vault-line-2);
+      border-radius: var(--r-l);
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .wing__inner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    @media (max-width: 920px) { .wing__inner { grid-template-columns: 1fr; padding: 2rem; } }
+
+    .wing__title {
+      font-family: var(--serif);
+      font-size: var(--t-h1);
+      line-height: 0.95;
+      letter-spacing: -0.025em;
+      margin: 0 0 1rem;
+      font-weight: 400;
+    }
+    .wing__title em { color: var(--gold); font-style: italic; }
+    .wing__text { color: var(--ink-soft); margin: 0 0 1.5rem; font-size: var(--t-lead); line-height: 1.5; }
+
+    .channels { display: grid; gap: .6rem; }
+    .channel {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      background: var(--vault-deep);
+      border: 1px solid var(--vault-line);
+      border-radius: var(--r-m);
+      transition: border-color .25s, transform .25s;
+    }
+    .channel:hover { border-color: var(--gold); transform: translateX(4px); }
+    .channel__icon { color: var(--gold); width: 28px; height: 28px; display: grid; place-items: center; }
+    .channel__l { font-family: var(--mono); font-size: var(--t-mono-xs); color: var(--ink-mute); letter-spacing: .15em; text-transform: uppercase; }
+    .channel__v { font-family: var(--serif); font-size: 1.1rem; color: var(--ink); }
+    .channel__a { color: var(--ink-faint); transition: color .25s, transform .25s; }
+    .channel:hover .channel__a { color: var(--gold); transform: translate(2px,-2px); }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .foot {
+      padding: 2.5rem clamp(1.25rem, 4vw, 2.5rem) 2rem;
+      border-top: 1px solid var(--vault-line);
+      max-width: 1320px;
+      margin: 4rem auto 0;
+    }
+    .foot__inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 1.5rem;
+      align-items: center;
+    }
+    .foot__copy, .foot__time {
+      font-family: var(--mono);
+      font-size: var(--t-mono-xs);
+      color: var(--ink-mute);
+      letter-spacing: .1em;
+    }
+    .foot__time { text-align: right; }
+    .foot__sig {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--ink-soft);
+      text-align: center;
+    }
+    @media (max-width: 720px) {
+      .foot__inner { grid-template-columns: 1fr; text-align: center; }
+      .foot__time { text-align: center; }
+    }
+
+    .reveal { opacity: 0; transform: translateY(20px); transition: opacity .9s var(--ease), transform .9s var(--ease); }
+    .reveal.in { opacity: 1; transform: translateY(0); }
+    .reveal[data-stagger="1"] { transition-delay: .08s; }
+    .reveal[data-stagger="2"] { transition-delay: .16s; }
+    .reveal[data-stagger="3"] { transition-delay: .24s; }
+    .reveal[data-stagger="4"] { transition-delay: .32s; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="nav">
+    <a href="#entrance" class="nav__brand" aria-label="Cabinet Kinvi — accueil">
+      <span class="nav__brand-mark">Cabinet Kinvi</span>
+      <span class="nav__brand-sub" data-i18n="nav.tag">Est. 2026</span>
+    </a>
+    <div class="nav__right">
+      <span class="nav__hours"><span class="dot"></span><span data-i18n="nav.open">Ouvert · Open to work</span></span>
+      <button class="lang-toggle" id="lang-toggle" aria-label="Changer de langue">
+        <span class="on" data-lang="fr">FR</span><span class="off"> · </span><span class="off" data-lang="en">EN</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ENTRANCE -->
+    <section class="entrance" id="entrance">
+      <div class="entrance__inner">
+        <div>
+          <div class="plate" data-i18n="entrance.plate">Cabinet de curiosités · Data &amp; AI</div>
+          <h1 class="entrance__title">
+            <span data-i18n="entrance.t1">Le</span>
+            <span class="it" data-i18n="entrance.t2">cabinet</span><br>
+            <span data-i18n="entrance.t3">de Jahdiel</span>
+            <span class="it" data-i18n="entrance.t4">Kinvi.</span>
+          </h1>
+          <p class="entrance__sub" data-i18n="entrance.sub">
+            Cinq vitrines, cinq projets data &amp; AI à explorer.
+          </p>
+          <p class="entrance__lede" data-i18n="entrance.lede">
+            Vous entrez dans un musée numérique de mes travaux récents. Chaque artefact est un projet réel : <strong>statistiques NBA</strong>, <strong>e-commerce brésilien</strong>, <strong>cockpit B2B SaaS</strong>, <strong>pipeline éditorial IA</strong>, <strong>extracteur de tâches</strong>. Approchez. Tournez autour. Cliquez pour ouvrir la vitrine.
+          </p>
+          <div class="entrance__cta">
+            <a class="btn-cta btn-cta--gold" href="#stage">
+              <span data-i18n="entrance.enter">Entrer dans la salle</span>
+              <svg class="arrow" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            </a>
+            <a class="btn-cta btn-cta--ghost" href="#wing">
+              <span data-i18n="entrance.contact">Me contacter</span>
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4h12v8H2zM2 4l6 5 6-5"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <aside class="info-card">
+          <h2 class="info-card__h" data-i18n="info.h">Informations pratiques</h2>
+          <div class="info-rows">
+            <div class="info-row">
+              <span class="info-row__k" data-i18n="info.curator">Conservateur</span>
+              <span class="info-row__v"><em>J.</em> Kinvi</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row__k" data-i18n="info.specialty">Spécialité</span>
+              <span class="info-row__v" data-i18n="info.specialty.v">Data &amp; AI appliquée</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row__k" data-i18n="info.formation">Formation</span>
+              <span class="info-row__v" data-i18n="info.formation.v">M1 Data Science</span>
+            </div>
+            <div class="info-row">
+              <span class="info-row__k" data-i18n="info.collection">Collection</span>
+              <span class="info-row__v">5 <em data-i18n="info.collection.v">vitrines</em></span>
+            </div>
+            <div class="info-row">
+              <span class="info-row__k" data-i18n="info.location">Localisation</span>
+              <span class="info-row__v">Paris, FR</span>
+            </div>
+          </div>
+          <div class="info-foot">
+            <span data-i18n="info.audio">Audioguide non requis</span>
+            <span class="stamp" data-i18n="info.stamp">Entrée libre</span>
+          </div>
+        </aside>
+      </div>
+
+      <div class="scroll-hint">
+        <span data-i18n="entrance.scroll">Descendre vers la salle</span>
+        <span class="scroll-hint__line"></span>
+      </div>
+    </section>
+
+    <!-- STAGE — la salle 3D -->
+    <section class="stage" id="stage" aria-label="Salle d'exposition interactive">
+      <canvas id="stage-canvas"></canvas>
+
+      <div class="stage__ui">
+        <div class="stage__title">
+          <span class="room" data-i18n="stage.room">Salle 01 · Cinq vitrines</span>
+          <span class="name" data-i18n="stage.name">Cliquez sur une œuvre pour l'examiner.</span>
+        </div>
+        <div class="stage__hint">
+          <span data-i18n="stage.hint">Cliquer-glisser pour tourner</span>
+          <span class="arrows">↻</span>
+          <span data-i18n="stage.hint2">cliquer une vitrine pour ouvrir</span>
+        </div>
+      </div>
+
+      <div class="stage__map" role="navigation" aria-label="Aperçu des vitrines">
+        <button class="pin" data-go="0" aria-label="Vitrine 1"><span class="tip">I · NBA</span></button>
+        <button class="pin" data-go="1" aria-label="Vitrine 2"><span class="tip">II · Olist</span></button>
+        <button class="pin" data-go="2" aria-label="Vitrine 3"><span class="tip">III · Mirakl</span></button>
+        <button class="pin" data-go="3" aria-label="Vitrine 4"><span class="tip">IV · Payfit</span></button>
+        <button class="pin" data-go="4" aria-label="Vitrine 5"><span class="tip">V · Todomaking</span></button>
+      </div>
+
+      <div class="stage__label" id="hover-label" aria-hidden="true">
+        <span id="hover-label-text"></span>
+      </div>
+    </section>
+
+    <!-- PLAQUE STRIP — chiffres globaux du cabinet -->
+    <div class="plaque-strip" id="numbers">
+      <div class="plaque-strip__hd">
+        <span class="plaque-strip__num">— 02 —</span>
+        <h2 class="plaque-strip__title reveal" data-i18n="plaque.title">Chiffres de la <em>collection</em>.</h2>
+        <span class="plaque-strip__meta" data-i18n="plaque.meta">Inventaire au 06.05.2026</span>
+      </div>
+      <div class="plaque-grid">
+        <div class="plaque reveal" data-stagger="1">
+          <div class="plaque__num"><span class="counter" data-target="508">0</span></div>
+          <div class="plaque__lab" data-i18n="plaque.1">Joueurs analysés · NBA</div>
+        </div>
+        <div class="plaque reveal" data-stagger="2">
+          <div class="plaque__num"><span class="counter" data-target="99441">0</span></div>
+          <div class="plaque__lab" data-i18n="plaque.2">Commandes · Olist</div>
+        </div>
+        <div class="plaque reveal" data-stagger="3">
+          <div class="plaque__num"><span class="counter" data-target="8">0</span><span class="suf">+8</span></div>
+          <div class="plaque__lab" data-i18n="plaque.3">Workflows n8n · Mirakl</div>
+        </div>
+        <div class="plaque reveal" data-stagger="4">
+          <div class="plaque__num"><span class="counter" data-target="8">0</span></div>
+          <div class="plaque__lab" data-i18n="plaque.4">Agents IA · Payfit</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WING — contact -->
+    <section class="wing" id="wing">
+      <div class="wing__inner">
+        <div>
+          <h2 class="wing__title">
+            <span data-i18n="wing.t1">Une visite</span>
+            <em data-i18n="wing.t2">privée&nbsp;?</em>
+          </h2>
+          <p class="wing__text" data-i18n="wing.text">
+            Stage, alternance, mission freelance — je suis disponible pour discuter de pipelines de données, d'analyses business chiffrées et d'orchestration d'agents IA en production.
+          </p>
+        </div>
+        <div class="channels">
+          <a class="channel" href="mailto:jkinvi@eugeniaschool.com">
+            <span class="channel__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 6 10-6"/></svg></span>
+            <span>
+              <span class="channel__l" data-i18n="wing.email">Courrier électronique</span><br>
+              <span class="channel__v">jkinvi@eugeniaschool.com</span>
+            </span>
+            <svg class="channel__a" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+          <a class="channel" href="https://www.linkedin.com" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2zM4 6a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg></span>
+            <span>
+              <span class="channel__l">LinkedIn</span><br>
+              <span class="channel__v">/in/jahdielkinvi</span>
+            </span>
+            <svg class="channel__a" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+          <a class="channel" href="https://github.com" target="_blank" rel="noopener">
+            <span class="channel__icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg></span>
+            <span>
+              <span class="channel__l">GitHub</span><br>
+              <span class="channel__v">@jahdielkinvi</span>
+            </span>
+            <svg class="channel__a" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M7 17L17 7M9 7h8v8"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="foot__inner">
+      <div class="foot__copy" data-i18n="foot.copy">© 2026 Jahdiel Kinvi · Cabinet privé</div>
+      <div class="foot__sig" data-i18n="foot.sig">Conçu &amp; codé avec rigueur.</div>
+      <div class="foot__time"><span id="paris-time">--:--</span> · Paris</div>
+    </div>
+  </footer>
+
+  <!-- VITRINE PANEL -->
+  <aside class="vitrine" id="vitrine" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="vitrine-title">
+    <div class="vitrine__veil" data-close></div>
+    <div class="vitrine__panel" id="vitrine-panel">
+      <button class="vitrine__close" data-close aria-label="Fermer la vitrine">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 6l12 12M6 18L18 6"/></svg>
+      </button>
+      <div class="vitrine__inner" id="vitrine-inner"><!-- contenu injecté --></div>
+    </div>
+  </aside>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lightbox__close" id="lightbox-close" aria-label="Fermer la vue agrandie">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M6 18L18 6"/></svg>
+    </button>
+    <img id="lightbox-img" alt="" />
+  </div>
+
+<script>
+  // ============================================================
+  // i18n DICTIONARY
+  // ============================================================
+  const I18N = {
+    fr: {
+      'nav.tag': 'Est. 2026',
+      'nav.open': 'Ouvert · Open to work',
+      'entrance.plate': 'Cabinet de curiosités · Data & AI',
+      'entrance.t1': 'Le',
+      'entrance.t2': 'cabinet',
+      'entrance.t3': 'de Jahdiel',
+      'entrance.t4': 'Kinvi.',
+      'entrance.sub': 'Cinq vitrines, cinq projets data & AI à explorer.',
+      'entrance.lede': 'Vous entrez dans un musée numérique de mes travaux récents. Chaque artefact est un projet réel : <strong>statistiques NBA</strong>, <strong>e-commerce brésilien</strong>, <strong>cockpit B2B SaaS</strong>, <strong>pipeline éditorial IA</strong>, <strong>extracteur de tâches</strong>. Approchez. Tournez autour. Cliquez pour ouvrir la vitrine.',
+      'entrance.enter': 'Entrer dans la salle',
+      'entrance.contact': 'Me contacter',
+      'entrance.scroll': 'Descendre vers la salle',
+      'info.h': 'Informations pratiques',
+      'info.curator': 'Conservateur',
+      'info.specialty': 'Spécialité',
+      'info.specialty.v': 'Data & AI appliquée',
+      'info.formation': 'Formation',
+      'info.formation.v': 'M1 Data Science',
+      'info.collection': 'Collection',
+      'info.collection.v': 'vitrines',
+      'info.location': 'Localisation',
+      'info.audio': 'Audioguide non requis',
+      'info.stamp': 'Entrée libre',
+      'stage.room': 'Salle 01 · Cinq vitrines',
+      'stage.name': "Cliquez sur une œuvre pour l'examiner.",
+      'stage.hint': 'Cliquer-glisser pour tourner',
+      'stage.hint2': 'cliquer une vitrine pour ouvrir',
+      'plaque.title': 'Chiffres de la <em>collection</em>.',
+      'plaque.meta': 'Inventaire au 06.05.2026',
+      'plaque.1': 'Joueurs analysés · NBA',
+      'plaque.2': 'Commandes · Olist',
+      'plaque.3': 'Workflows n8n · Mirakl',
+      'plaque.4': 'Agents IA · Payfit',
+      'wing.t1': 'Une visite',
+      'wing.t2': 'privée\u00a0?',
+      'wing.text': "Stage, alternance, mission freelance — je suis disponible pour discuter de pipelines de données, d'analyses business chiffrées et d'orchestration d'agents IA en production.",
+      'wing.email': 'Courrier électronique',
+      'foot.copy': '© 2026 Jahdiel Kinvi · Cabinet privé',
+      'foot.sig': 'Conçu & codé avec rigueur.'
+    },
+    en: {
+      'nav.tag': 'Est. 2026',
+      'nav.open': 'Open · Open to work',
+      'entrance.plate': 'Cabinet of curiosities · Data & AI',
+      'entrance.t1': "Jahdiel",
+      'entrance.t2': "Kinvi's",
+      'entrance.t3': '',
+      'entrance.t4': 'cabinet.',
+      'entrance.sub': 'Five vitrines, five data & AI projects to explore.',
+      'entrance.lede': 'You are entering a digital museum of my recent work. Each artefact is a real project: <strong>NBA statistics</strong>, <strong>Brazilian e-commerce</strong>, <strong>B2B SaaS cockpit</strong>, <strong>AI editorial pipeline</strong>, <strong>task extractor</strong>. Step closer. Walk around. Click to open the vitrine.',
+      'entrance.enter': 'Enter the room',
+      'entrance.contact': 'Get in touch',
+      'entrance.scroll': 'Continue to the room',
+      'info.h': 'Visitor information',
+      'info.curator': 'Curator',
+      'info.specialty': 'Specialty',
+      'info.specialty.v': 'Applied Data & AI',
+      'info.formation': 'Training',
+      'info.formation.v': "M1 Data Science",
+      'info.collection': 'Collection',
+      'info.collection.v': 'vitrines',
+      'info.location': 'Location',
+      'info.audio': 'No audioguide needed',
+      'info.stamp': 'Free entry',
+      'stage.room': 'Room 01 · Five vitrines',
+      'stage.name': 'Click an artefact to examine it.',
+      'stage.hint': 'Click & drag to rotate',
+      'stage.hint2': 'click a vitrine to open',
+      'plaque.title': 'Numbers of the <em>collection</em>.',
+      'plaque.meta': 'Inventory as of 06.05.2026',
+      'plaque.1': 'Players analysed · NBA',
+      'plaque.2': 'Orders · Olist',
+      'plaque.3': 'n8n workflows · Mirakl',
+      'plaque.4': 'AI agents · Payfit',
+      'wing.t1': 'A private',
+      'wing.t2': 'tour?',
+      'wing.text': 'Internship, apprenticeship, freelance — available to discuss data pipelines, quantified business analysis and production AI agent orchestration.',
+      'wing.email': 'Email',
+      'foot.copy': '© 2026 Jahdiel Kinvi · Private cabinet',
+      'foot.sig': 'Designed & coded with rigour.'
+    }
+  };
+
+  // ============================================================
+  // PROJECT DATA — les 5 vitrines
+  // ============================================================
+  const PROJECTS = {
+    nba: {
+      num: 'I',
+      title: { fr: 'NBA <em>—</em> Salaires &amp; performance', en: 'NBA <em>—</em> Salary &amp; performance' },
+      sub:   { fr: 'Étude économétrique · Saison 2024-25', en: 'Econometric study · 2024-25 season' },
+      meta: ['Python', 'Web Scraping', 'Statistical Analysis', '2026'],
+      lede: {
+        fr: "Les joueurs les mieux payés sont-ils les plus performants ? La réponse, en 508 contrats et 0,802 de coefficient de Pearson.",
+        en: "Are the best-paid players the best-performing ones? The answer, in 508 contracts and a 0.802 Pearson coefficient."
+      },
+      body: {
+        fr: `<p>Étude de la <strong>corrélation salaire/performance</strong> sur la saison NBA 2024-25, à partir d'un scraping multi-sources. La piste initiale (Basketball Reference) a été abandonnée après plusieurs blocages anti-bot ; pivot vers <em>HoopsHype</em> (salaires) et <em>NBA Stuffer</em> (statistiques avancées), avec fusion sur nom de joueur normalisé et déduplication par contrat principal.</p>
+<p>Trois métriques propriétaires ont été calculées : <strong>PTS_per_Million</strong> (efficacité offensive), <strong>Composite Score</strong> (points + assists + rebonds) et <strong>Salary Efficiency Score</strong>. La régression linéaire confirme la H1 (corrélation positive forte), la H2 (rookies sur-performants par rapport au salaire) et la H3 (12% du marché en sur/sous-paiement notable).</p>
+<p><strong>Conclusion factuelle</strong> : chaque point/match supplémentaire vaut +340k$ de salaire en moyenne, et 64,3% de la variance des salaires s'explique par les seuls points marqués.</p>`,
+        en: `<p>Study of the <strong>salary/performance correlation</strong> over the 2024-25 NBA season, using multi-source scraping. The initial source (Basketball Reference) was dropped after repeated anti-bot blocks; pivot to <em>HoopsHype</em> (salaries) and <em>NBA Stuffer</em> (advanced stats), merged on normalised player name and deduplicated on primary contract.</p>
+<p>Three proprietary metrics were computed: <strong>PTS_per_Million</strong> (offensive efficiency), <strong>Composite Score</strong> (points + assists + rebounds) and <strong>Salary Efficiency Score</strong>. Linear regression confirms H1 (strong positive correlation), H2 (rookies outperform their salary band) and H3 (12% of the market is notably over/under-paid).</p>
+<p><strong>Factual conclusion</strong>: each additional point/game is worth +$340k of salary on average, and 64.3% of salary variance is explained by points alone.</p>`
+      },
+      metrics: [
+        { v: '0.802', s: '', cls: 'gold', l_fr: 'Pearson r · p<0.001', l_en: 'Pearson r · p<0.001' },
+        { v: '64.3', s: '%', cls: '', l_fr: 'Variance R² expliquée', l_en: 'R² variance explained' },
+        { v: '+340', s: 'k$', cls: 'signal', l_fr: 'Salaire / point', l_en: 'Salary / point' },
+        { v: '12', s: '%', cls: 'acid', l_fr: 'Inefficiences marché', l_en: 'Market inefficiencies' },
+        { v: '508', s: '', cls: '', l_fr: 'Joueurs analysés', l_en: 'Players analysed' },
+        { v: '93', s: '%', cls: '', l_fr: 'Taux de fusion', l_en: 'Merge rate' }
+      ],
+      stack: ['Python', 'BeautifulSoup', 'Pandas', 'NumPy', 'SciPy', 'Matplotlib', 'Seaborn'],
+      images: [
+        { src: 'assets/nba-1-scatter.png',  cap_fr: 'Scatter plot Salaire / Points + régression linéaire',     cap_en: 'Salary / Points scatter plot + linear regression' },
+        { src: 'assets/nba-2-deals.png',    cap_fr: 'Top 10 Best Deals (ratio pts/M$)',                       cap_en: 'Top 10 Best Deals (pts/M$ ratio)' },
+        { src: 'assets/nba-3-heatmap.png',  cap_fr: 'Heatmap des corrélations entre variables',                cap_en: 'Heatmap of variable correlations' },
+        { src: 'assets/nba-4-violin.png',   cap_fr: 'Violin plot · performance par tranche salariale',         cap_en: 'Violin plot · performance by salary band' }
+      ]
+    },
+
+    olist: {
+      num: 'II',
+      title: { fr: 'Olist <em>—</em> e-commerce Brésil', en: 'Olist <em>—</em> Brazilian e-commerce' },
+      sub:   { fr: 'Business case · Tableau Desktop', en: 'Business case · Tableau Desktop' },
+      meta: ['Tableau Desktop', 'Mapbox', 'Geo Analysis', 'Time Series', '2026'],
+      lede: {
+        fr: "Cartographier 99 441 commandes sur 27 États brésiliens — où, quand, comment et combien.",
+        en: "Mapping 99,441 orders across 27 Brazilian states — where, when, how and how much."
+      },
+      body: {
+        fr: `<p>Business case Tableau Desktop sur le marketplace brésilien Olist (Mar 2017 – Juin 2018). L'objectif : produire une vue géospatiale, opérationnelle et temporelle exploitable par un comité de direction non technique.</p>
+<p>Trois axes d'analyse : <strong>statuts opérationnels</strong> (delivered, shipped, canceled, etc.), <strong>cartographie</strong> des paiements par État via Mapbox (de 10k à 5,99M R$), et <strong>évolution mensuelle</strong> du volume de commandes. Les concentrations attendues (São Paulo, Rio, Minas Gerais) sont confirmées et chiffrées ; les anomalies de série temporelle ouvrent des questions opérationnelles précises.</p>
+<p>Livrable final : workbook Tableau interactif avec drill-down par État et par statut, prêt pour comité.</p>`,
+        en: `<p>Tableau Desktop business case on the Brazilian marketplace Olist (Mar 2017 – Jun 2018). The goal: produce a geospatial, operational and temporal view usable by a non-technical executive committee.</p>
+<p>Three angles of analysis: <strong>operational statuses</strong> (delivered, shipped, canceled, etc.), <strong>cartography</strong> of payments by state via Mapbox (10k to 5.99M R$), and <strong>monthly evolution</strong> of order volume. Expected concentrations (São Paulo, Rio, Minas Gerais) are confirmed and quantified; time series anomalies raise specific operational questions.</p>
+<p>Final deliverable: interactive Tableau workbook with drill-down by state and by status, exec-ready.</p>`
+      },
+      metrics: [
+        { v: '99 441', s: '', cls: 'gold',   l_fr: 'Commandes traitées', l_en: 'Orders processed' },
+        { v: '27',     s: '', cls: '',       l_fr: 'États brésiliens',   l_en: 'Brazilian states' },
+        { v: '5.99',   s: 'M R$', cls: 'acid', l_fr: 'Top paiement / État', l_en: 'Top payment / state' },
+        { v: '15',     s: 'mois', cls: '', l_fr: 'Période analysée',  l_en: 'Period analysed' },
+        { v: '8',      s: '',     cls: '', l_fr: 'Statuts opérationnels', l_en: 'Operational statuses' },
+        { v: '3',      s: '',     cls: '', l_fr: 'Vues croisées', l_en: 'Cross views' }
+      ],
+      stack: ['Tableau Desktop', 'Mapbox', 'SQL', 'Geo Analysis', 'Time Series'],
+      // Olist : pas d'image disponible → SVG inline généré
+      svg: 'olist'
+    },
+
+    mirakl: {
+      num: 'III',
+      title: { fr: 'Mirakl Sales <em>Command&nbsp;Center</em>', en: 'Mirakl Sales <em>Command&nbsp;Center</em>' },
+      sub:   { fr: 'Cockpit B2B SaaS · Hackathon', en: 'B2B SaaS cockpit · Hackathon' },
+      meta: ['Next.js', 'n8n', 'Supabase', 'GPT-4o', 'Apollo', 'Brevo', '2026'],
+      lede: {
+        fr: "Un cockpit unique pour piloter l'acquisition Mirakl Connect — du scraping marketplace à l'envoi d'emails personnalisés.",
+        en: "A single cockpit to drive Mirakl Connect acquisition — from marketplace scraping to personalised email sending."
+      },
+      body: {
+        fr: `<p>Cockpit Sales B2B construit pour les équipes Mirakl Connect : il agrège <strong>scraping multi-marketplaces Amazon</strong>, <strong>filtrage qualité Zalando</strong>, <strong>scoring Dust/GPT-4o</strong>, <strong>enrichissement Apollo.io</strong> et <strong>séquences Brevo (J0/J+3/J+6)</strong> dans une interface unifiée.</p>
+<p>L'architecture repose sur une stack moderne : Next.js (UI), n8n (orchestration), Supabase (base de données), GPT-4o (génération d'emails), Apollo (decision-makers), Brevo (sending). Trois workflows n8n principaux : Filtrage &amp; Déduplication (toutes les 5 min), Agent DUST Scoring (107 vendeurs/lot), Génération d'emails IA par template.</p>
+<p><strong>Cas d'usage chiffré</strong> : 296 leads scrapés, 205 high-fit (&gt;70), 96 ready-to-send. Pour un vendeur comme Lacoste (38 produits, 4.7/5, 975€ mensuels), le système identifie un <em>+117€/mois de potentiel additionnel</em> sur Zalando et génère 3 templates d'outreach personnalisés.</p>`,
+        en: `<p>B2B Sales cockpit built for Mirakl Connect teams: it aggregates <strong>multi-marketplace Amazon scraping</strong>, <strong>Zalando quality filtering</strong>, <strong>Dust/GPT-4o scoring</strong>, <strong>Apollo.io enrichment</strong> and <strong>Brevo sequences (D0/D+3/D+6)</strong> into a unified interface.</p>
+<p>Modern stack: Next.js (UI), n8n (orchestration), Supabase (database), GPT-4o (email generation), Apollo (decision-makers), Brevo (sending). Three main n8n workflows: Filtering &amp; Deduplication (every 5 min), DUST Scoring Agent (107 sellers/batch), AI email generation by template.</p>
+<p><strong>Quantified use case</strong>: 296 leads scraped, 205 high-fit (&gt;70), 96 ready-to-send. For a seller like Lacoste (38 products, 4.7/5, €975 monthly), the system identifies <em>+€117/month of additional potential</em> on Zalando and generates 3 personalised outreach templates.</p>`
+      },
+      metrics: [
+        { v: '296', s: '', cls: 'gold', l_fr: 'Leads scrapés', l_en: 'Leads scraped' },
+        { v: '205', s: '', cls: '',     l_fr: 'High-fit (>70)', l_en: 'High-fit (>70)' },
+        { v: '96',  s: '', cls: 'acid', l_fr: 'Ready-to-send', l_en: 'Ready-to-send' },
+        { v: '8',   s: '+', cls: '',    l_fr: 'Workflows n8n', l_en: 'n8n workflows' },
+        { v: '5',   s: 'min', cls: '',  l_fr: 'Trigger pipeline', l_en: 'Pipeline trigger' },
+        { v: '3',   s: '',  cls: 'signal', l_fr: 'Templates IA / vendeur', l_en: 'AI templates / seller' }
+      ],
+      stack: ['Next.js', 'TypeScript', 'Tailwind', 'n8n', 'Supabase', 'GPT-4o', 'Apollo.io', 'Brevo'],
+      images: [
+        { src: 'assets/mirakl-1-hero.png',           cap_fr: "Page d'accueil — mirakl.vercel.app",           cap_en: 'Landing page — mirakl.vercel.app' },
+        { src: 'assets/mirakl-2-dashboard.png',      cap_fr: 'Global Dashboard — file de leads',             cap_en: 'Global Dashboard — lead queue' },
+        { src: 'assets/mirakl-7-pipeline.png',       cap_fr: 'Pipeline — Enrichment / Email / Sequence',     cap_en: 'Pipeline — Enrichment / Email / Sequence' },
+        { src: 'assets/mirakl-8-scraping.png',       cap_fr: 'Scraping Amazon FR par catégorie',             cap_en: 'Amazon FR scraping by category' },
+        { src: 'assets/mirakl-3-workflow.png',       cap_fr: 'Workflow n8n · Filtrage & déduplication',      cap_en: 'n8n workflow · Filtering & deduplication' },
+        { src: 'assets/mirakl-4-scoring.png',        cap_fr: 'Workflow n8n · Agent DUST Scoring',            cap_en: 'n8n workflow · DUST Scoring Agent' },
+        { src: 'assets/mirakl-6-emailgen-workflow.png', cap_fr: 'Workflow n8n · Génération emails IA',       cap_en: 'n8n workflow · AI email generation' },
+        { src: 'assets/mirakl-5-email.png',          cap_fr: 'Email généré pour Lacoste (mobile)',           cap_en: 'Generated email for Lacoste (mobile)' }
+      ]
+    },
+
+    payfit: {
+      num: 'IV',
+      title: { fr: 'Payfit <em>—</em> pipeline éditorial IA', en: 'Payfit <em>—</em> AI editorial pipeline' },
+      sub:   { fr: '8 agents Dust orchestrés · SEO/GEO B2B', en: '8 orchestrated Dust agents · B2B SEO/GEO' },
+      meta: ['Dust', 'Multi-agent', 'Prompt Engineering', 'GSC', 'Légifrance', '2026'],
+      lede: {
+        fr: "Détecter, scorer, rédiger, valider, publier, mailler — un pipeline éditorial où huit agents IA collaborent en chaîne.",
+        en: "Detect, score, write, validate, publish, link — an editorial pipeline where eight AI agents collaborate in chain."
+      },
+      body: {
+        fr: `<p>Architecture d'un pipeline éditorial entièrement orchestré par <strong>8 agents Dust</strong>, conçu pour cibler les TPE/PME françaises (1–200 salariés) sur les sujets RH/Paie. La pipeline couvre la chaîne complète, de la détection de sujets émergents à l'acquisition de backlinks externes.</p>
+<p>Les agents et leurs rôles : <em>Content Engine</em> (détection 4 sources : Légifrance, URSSAF, Google Trends, concurrents) → <em>Gap Concurrentiel</em> (analyse Factorial / Lucca / Cegid, gap score /10) → <em>KPI Optimizer</em> (analyse GSC, briefs ciblés) → <em>Agent Créa SEO</em> (rédaction) → <em>LégisCorrecteur</em> (vérification légale) + <em>EEAT Validator</em> → <em>Backlinks</em> (maillage interne + outreach) → option <em>GEO Analyst</em> (analyse LLMs).</p>
+<p><strong>Scoring rigoureux</strong> : chaque sujet est noté sur 50 points (5 critères × 10 : Urgence légale, Signal tendance, Intention ICP, Faisabilité simulateur, Opportunité EEAT). Seuils : ≥38 retenu, 30-37 liste d'attente, ≤29 éliminé. L'Agent Backlinks atteint <em>60/60</em> en validation interne et produit un rapport complet en 60s.</p>`,
+        en: `<p>Architecture of an editorial pipeline fully orchestrated by <strong>8 Dust agents</strong>, designed to target French SMBs (1–200 employees) on HR/Payroll topics. The pipeline covers the full chain, from emerging topic detection to external backlink acquisition.</p>
+<p>The agents and their roles: <em>Content Engine</em> (4-source detection: Légifrance, URSSAF, Google Trends, competitors) → <em>Gap Concurrentiel</em> (Factorial / Lucca / Cegid analysis, /10 gap score) → <em>KPI Optimizer</em> (GSC analysis, targeted briefs) → <em>SEO Writer Agent</em> (writing) → <em>LégisCorrecteur</em> (legal check) + <em>EEAT Validator</em> → <em>Backlinks</em> (internal linking + outreach) → optional <em>GEO Analyst</em> (LLM analysis).</p>
+<p><strong>Rigorous scoring</strong>: each topic is rated on 50 points (5 criteria × 10: Legal urgency, Trend signal, ICP intent, Simulator feasibility, EEAT opportunity). Thresholds: ≥38 retained, 30-37 waiting list, ≤29 eliminated. The Backlinks agent reaches <em>60/60</em> in internal validation and produces a full report in 60s.</p>`
+      },
+      metrics: [
+        { v: '8',  s: '', cls: 'gold', l_fr: 'Agents IA orchestrés', l_en: 'AI agents orchestrated' },
+        { v: '4',  s: '+1', cls: '',   l_fr: 'Steps + Step option', l_en: 'Steps + optional step' },
+        { v: '60', s: '/60', cls: 'acid', l_fr: 'Score validation Backlinks', l_en: 'Backlinks validation score' },
+        { v: '50', s: 'pts', cls: '',  l_fr: 'Scoring sujet sur 5 critères', l_en: 'Topic scoring on 5 criteria' },
+        { v: '60', s: 's',   cls: 'signal', l_fr: 'Temps Step 4 backlinks', l_en: 'Step 4 backlinks time' },
+        { v: '4',  s: '',    cls: '', l_fr: 'Sources signal détecté', l_en: 'Detected signal sources' }
+      ],
+      stack: ['Dust', 'Multi-agent', 'Prompt Engineering', 'Google Search Console', 'Légifrance API', 'URSSAF', 'EEAT'],
+      svg: 'payfit'
+    },
+
+    todo: {
+      num: 'V',
+      title: { fr: 'Todomaking <em>—</em> de doc à&nbsp;tâche', en: 'Todomaking <em>—</em> from doc to&nbsp;task' },
+      sub:   { fr: "L'IA qui extrait et priorise vos tâches", en: 'The AI that extracts and prioritises tasks' },
+      meta: ['Dust', 'NLP', 'Document Processing', '2026'],
+      lede: {
+        fr: "Un agent Dust qui transforme emails, comptes-rendus et rapports en tableau de tâches priorisées — sans hallucination.",
+        en: "A Dust agent that turns emails, minutes and reports into a prioritised task table — with zero hallucination."
+      },
+      body: {
+        fr: `<p>Assistant IA construit sur Dust qui lit n'importe quel document texte (emails, comptes-rendus, rapports, consignes) et en extrait <strong>toutes les tâches actionnables</strong>, structurées dans un tableau avec verbe d'action, priorité et deadline.</p>
+<p>Le pipeline en <strong>5 étapes</strong> : Lecture (identification des éléments actionnables) → Extraction (action + contexte + délais) → Reformulation (format VERBE + OBJET) → Priorisation (Haute / Moyenne / Basse) → Structuration (tableau organisé). Quelques secondes pour un document entier.</p>
+<p><strong>Avant Todomaking</strong> : tâches noyées dans le texte, aucune priorisation, risque d'oubli élevé. <strong>Après</strong> : clarté instantanée, actions priorisées, rien n'est oublié. Impact mesuré : <em>2h30 économisées par semaine</em>, capture de 100% des tâches, 0 hallucination, +40% de productivité d'équipe — soit 10h/mois récupérées.</p>`,
+        en: `<p>Dust-based AI assistant that reads any text document (emails, minutes, reports, briefs) and extracts <strong>all actionable tasks</strong>, structured in a table with action verb, priority and deadline.</p>
+<p>The <strong>5-step pipeline</strong>: Reading (identify actionable elements) → Extraction (action + context + deadlines) → Reformulation (VERB + OBJECT format) → Prioritisation (High / Medium / Low) → Structuring (organised table). A few seconds per full document.</p>
+<p><strong>Before Todomaking</strong>: tasks buried in text, no prioritisation, high risk of being missed. <strong>After</strong>: instant clarity, prioritised actions, nothing forgotten. Measured impact: <em>2h30 saved per week</em>, 100% task capture, 0 hallucinations, +40% team productivity — 10h/month recovered.</p>`
+      },
+      metrics: [
+        { v: '−2h30', s: '/sem', cls: 'gold', l_fr: 'Temps économisé', l_en: 'Time saved' },
+        { v: '100',   s: '%',    cls: 'acid', l_fr: 'Tâches capturées',   l_en: 'Tasks captured' },
+        { v: '0',     s: '',     cls: 'signal', l_fr: 'Hallucinations',  l_en: 'Hallucinations' },
+        { v: '+40',   s: '%',    cls: '',     l_fr: "Productivité d'équipe", l_en: 'Team productivity' },
+        { v: '5',     s: '',     cls: '',     l_fr: 'Étapes pipeline',    l_en: 'Pipeline steps' },
+        { v: '10',    s: 'h/mois', cls: '',   l_fr: 'ROI temps récupéré', l_en: 'ROI time recovered' }
+      ],
+      stack: ['Dust', 'NLP', 'Prompt Engineering', 'Document Parsing', 'Task Structuring'],
+      svg: 'todo'
+    }
+  };
+
+  const ORDER = ['nba', 'olist', 'mirakl', 'payfit', 'todo'];
+
+  // ============================================================
+  // i18n APPLY
+  // ============================================================
+  const langBtn = document.getElementById('lang-toggle');
+  let currentLang = 'fr';
+  function applyLang(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (I18N[lang] && I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
+    });
+    langBtn.querySelectorAll('span[data-lang]').forEach(s => {
+      s.classList.toggle('on', s.dataset.lang === lang);
+      s.classList.toggle('off', s.dataset.lang !== lang);
+    });
+    // If a vitrine is open, re-render in the new language
+    const v = document.getElementById('vitrine');
+    if (v.classList.contains('open') && v.dataset.key) renderVitrine(v.dataset.key);
+  }
+  langBtn.addEventListener('click', () => applyLang(currentLang === 'fr' ? 'en' : 'fr'));
+
+  // ============================================================
+  // PARIS TIME
+  // ============================================================
+  function tickClock() {
+    const now = new Date();
+    const opts = { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris', hour12: false };
+    document.getElementById('paris-time').textContent = now.toLocaleTimeString('fr-FR', opts);
+  }
+  tickClock(); setInterval(tickClock, 30000);
+
+  // ============================================================
+  // REVEAL on scroll
+  // ============================================================
+  const revealObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); } });
+  }, { threshold: .12, rootMargin: '0px 0px -8% 0px' });
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ============================================================
+  // COUNTERS
+  // ============================================================
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals || '0', 10);
+    const dur = 2000;
+    const t0 = performance.now();
+    function tick(t) {
+      const k = Math.min(1, (t - t0) / dur);
+      const eased = 1 - Math.pow(1 - k, 3);
+      const val = target * eased;
+      el.textContent = decimals > 0 ? val.toFixed(decimals) : Math.round(val).toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+      if (k < 1) requestAnimationFrame(tick);
+      else el.textContent = decimals > 0 ? target.toFixed(decimals) : target.toLocaleString('fr-FR').replace(/\u202f/g, ' ');
+    }
+    requestAnimationFrame(tick);
+  }
+  const counterObs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCounter(e.target); counterObs.unobserve(e.target); } });
+  }, { threshold: .4 });
+  document.querySelectorAll('.counter').forEach(c => counterObs.observe(c));
+
+  // ============================================================
+  // INLINE SVGs (Olist, Payfit, Todo)
+  // ============================================================
+  const SVGS = {
+    olist: `
+<svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" class="gallery__svg">
+  <defs>
+    <linearGradient id="brGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4c391" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#d4c391" stop-opacity=".15"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="460" fill="#08090c"/>
+  <g stroke="rgba(212,195,145,.06)" stroke-width=".5">
+    <line x1="0" y1="60"  x2="800" y2="60"/><line x1="0" y1="120" x2="800" y2="120"/>
+    <line x1="0" y1="180" x2="800" y2="180"/><line x1="0" y1="240" x2="800" y2="240"/>
+    <line x1="0" y1="300" x2="800" y2="300"/><line x1="0" y1="360" x2="800" y2="360"/>
+  </g>
+  <text x="36" y="38" font-family="JetBrains Mono" font-size="11" fill="#7d786a" letter-spacing="2">OLIST · BRAZIL · 2017–2018</text>
+  <!-- Brazil silhouette stylised -->
+  <g transform="translate(80, 80)">
+    <path d="M 140 50 Q 165 25, 200 35 L 250 50 Q 285 60, 295 95 L 305 145 Q 315 180, 305 215 L 295 250 Q 285 285, 260 310 L 235 345 Q 200 370, 165 360 L 140 345 Q 110 320, 100 285 L 90 250 Q 80 215, 90 170 L 100 135 Q 115 90, 140 50 Z"
+          fill="none" stroke="#d4c391" stroke-width="1" stroke-opacity=".55"/>
+    <!-- States as scaled dots -->
+    <g class="dots">
+      <circle cx="190" cy="280" r="26" fill="#d4c391" opacity=".75"/>
+      <text x="190" y="285" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#08090c" font-weight="600">SP</text>
+      <circle cx="225" cy="245" r="17" fill="#d4c391" opacity=".65"/>
+      <text x="225" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#08090c" font-weight="600">RJ</text>
+      <circle cx="180" cy="220" r="14" fill="#d4c391" opacity=".55"/>
+      <text x="180" y="224" text-anchor="middle" font-family="JetBrains Mono" font-size="8" fill="#08090c" font-weight="600">MG</text>
+      <circle cx="245" cy="305" r="10" fill="#d4c391" opacity=".5"/>
+      <text x="245" y="309" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="#08090c" font-weight="600">RS</text>
+      <circle cx="155" cy="320" r="9" fill="#d4c391" opacity=".5"/>
+      <circle cx="255" cy="180" r="8" fill="#d4c391" opacity=".45"/>
+      <circle cx="270" cy="120" r="7" fill="#d4c391" opacity=".4"/>
+      <circle cx="145" cy="150" r="7" fill="#d4c391" opacity=".4"/>
+      <circle cx="115" cy="195" r="6" fill="#d4c391" opacity=".35"/>
+      <circle cx="220" cy="100" r="6" fill="#d4c391" opacity=".35"/>
+      <circle cx="285" cy="200" r="5" fill="#d4c391" opacity=".3"/>
+      <circle cx="160" cy="100" r="5" fill="#d4c391" opacity=".3"/>
+      <circle cx="290" cy="270" r="5" fill="#d4c391" opacity=".3"/>
+    </g>
+  </g>
+  <!-- Bar chart on right -->
+  <g transform="translate(450, 80)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="11" fill="#7d786a" letter-spacing="2">ORDER STATUS · DISTRIBUTION</text>
+    <g transform="translate(0, 25)">
+      <rect width="280" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="6" y="15" font-family="Inter" font-size="11" fill="#08090c" font-weight="600">delivered</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#08090c" font-weight="600">96 478</text>
+    </g>
+    <g transform="translate(0, 60)">
+      <rect width="33" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="40" y="15" font-family="Inter" font-size="11" fill="#ece7d8">shipped</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#7d786a">1 107</text>
+    </g>
+    <g transform="translate(0, 95)">
+      <rect width="18" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="25" y="15" font-family="Inter" font-size="11" fill="#ece7d8">canceled</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#7d786a">625</text>
+    </g>
+    <g transform="translate(0, 130)">
+      <rect width="14" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="21" y="15" font-family="Inter" font-size="11" fill="#ece7d8">unavailable</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#7d786a">609</text>
+    </g>
+    <g transform="translate(0, 165)">
+      <rect width="9" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="16" y="15" font-family="Inter" font-size="11" fill="#ece7d8">invoiced</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#7d786a">314</text>
+    </g>
+    <g transform="translate(0, 200)">
+      <rect width="6" height="22" fill="url(#brGrad)" rx="2"/>
+      <text x="13" y="15" font-family="Inter" font-size="11" fill="#ece7d8">processing</text>
+      <text x="280" y="15" text-anchor="end" font-family="JetBrains Mono" font-size="11" fill="#7d786a">301</text>
+    </g>
+  </g>
+  <!-- Caption -->
+  <g transform="translate(36, 432)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="11" fill="#7d786a" letter-spacing="2">TOTAL · </text>
+    <text x="62" y="0" font-family="JetBrains Mono" font-size="14" fill="#b8e62f" font-weight="600">99 441 ORDERS · MAR 2017 → JUN 2018</text>
+  </g>
+</svg>`,
+
+    payfit: `
+<svg viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg" class="gallery__svg">
+  <defs>
+    <marker id="ah" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#d4c391"/></marker>
+    <linearGradient id="flow" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d4c391"/><stop offset="100%" stop-color="#b8e62f"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="460" fill="#08090c"/>
+  <text x="36" y="36" font-family="JetBrains Mono" font-size="11" fill="#7d786a" letter-spacing="2">PAYFIT · PIPELINE SEO/GEO · 8 AGENTS DUST</text>
+  <!-- Step labels -->
+  <g font-family="JetBrains Mono" font-size="10" fill="#d4c391" letter-spacing="2">
+    <text x="80"  y="80">STEP 1 · DETECT</text>
+    <text x="320" y="80">STEP 2 · WRITE</text>
+    <text x="500" y="80">STEP 3 · VALIDATE</text>
+    <text x="720" y="80">STEP 4 · ACQUIRE</text>
+  </g>
+  <!-- Step 1 — Content + Gap -->
+  <g transform="translate(50, 110)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#d4c391" stroke-opacity=".55"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">Content Engine</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">détection · 4 sources</text>
+    <circle cx="158" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" repeatCount="indefinite"/></circle>
+  </g>
+  <g transform="translate(50, 195)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#d4c391" stroke-opacity=".55"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">Gap Concurrentiel</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">Factorial · Lucca · Cegid</text>
+    <circle cx="158" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin=".3s" repeatCount="indefinite"/></circle>
+  </g>
+  <g transform="translate(50, 280)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#5bc4e8" stroke-opacity=".5" stroke-dasharray="3 3"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">KPI Optimizer</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">étape intermédiaire · GSC</text>
+  </g>
+  <!-- Connectors → Step 2 -->
+  <path d="M 220 138 Q 270 138, 280 195" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <path d="M 220 223 L 280 223" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <path d="M 220 308 Q 270 308, 280 251" stroke="#5bc4e8" stroke-opacity=".4" fill="none" stroke-dasharray="3 3" marker-end="url(#ah)"/>
+  <!-- Step 2 — Agent Créa -->
+  <g transform="translate(290, 195)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#d4c391" stroke-opacity=".55"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">Agent Créa SEO</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">rédaction · simulateur</text>
+    <circle cx="158" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin=".6s" repeatCount="indefinite"/></circle>
+  </g>
+  <!-- Step 2 → 3 -->
+  <path d="M 460 215 L 480 145" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <path d="M 460 235 L 480 305" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <!-- Step 3 — Légis + EEAT -->
+  <g transform="translate(490, 110)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#d4c391" stroke-opacity=".55"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">LégisCorrecteur</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">vérification légale</text>
+    <circle cx="158" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin=".9s" repeatCount="indefinite"/></circle>
+  </g>
+  <g transform="translate(490, 280)">
+    <rect width="170" height="56" rx="6" fill="#14171f" stroke="#d4c391" stroke-opacity=".55"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#ece7d8" font-weight="600">EEAT Validator</text>
+    <text x="85" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">expertise · trust</text>
+    <circle cx="158" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin="1.2s" repeatCount="indefinite"/></circle>
+  </g>
+  <!-- Step 3 → Step 4 -->
+  <path d="M 660 138 Q 700 138, 710 215" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <path d="M 660 308 Q 700 308, 710 235" stroke="#d4c391" stroke-opacity=".55" fill="none" marker-end="url(#ah)"/>
+  <!-- Step 4 — Backlinks (highlighted) -->
+  <g transform="translate(720, 195)">
+    <rect width="140" height="56" rx="6" fill="#14171f" stroke="#b8e62f" stroke-width="1.5" stroke-opacity=".85"/>
+    <text x="70" y="22" text-anchor="middle" font-family="Inter" font-size="12" fill="#b8e62f" font-weight="600">Backlinks</text>
+    <text x="70" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">60s · 60/60</text>
+    <circle cx="128" cy="10" r="3.5" fill="#5bd97e"><animate attributeName="opacity" values="1;.3;1" dur="2s" begin="1.5s" repeatCount="indefinite"/></circle>
+  </g>
+  <!-- Bottom : GEO Analyst (option) -->
+  <g transform="translate(290, 360)">
+    <rect width="170" height="50" rx="6" fill="#14171f" stroke="#5bc4e8" stroke-opacity=".5" stroke-dasharray="3 3"/>
+    <text x="85" y="22" text-anchor="middle" font-family="Inter" font-size="11" fill="#5bc4e8" font-weight="600">GEO Analyst</text>
+    <text x="85" y="38" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">step option · LLMs</text>
+  </g>
+  <!-- Flow line -->
+  <g transform="translate(36, 432)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="10" fill="#7d786a" letter-spacing="2">SCORING ≥ 38/50  →  BRIEF AUTO  →  ARTICLE  →  VALIDATION  →  ACQUISITION</text>
+    <line x1="0" y1="8" x2="828" y2="8" stroke="url(#flow)" stroke-width="1" stroke-dasharray="4 4">
+      <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+  </g>
+</svg>`,
+
+    todo: `
+<svg viewBox="0 0 800 460" xmlns="http://www.w3.org/2000/svg" class="gallery__svg">
+  <defs>
+    <linearGradient id="funnel" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#d4c391" stop-opacity=".15"/>
+      <stop offset="100%" stop-color="#b8e62f" stop-opacity=".7"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="460" fill="#08090c"/>
+  <text x="36" y="36" font-family="JetBrains Mono" font-size="11" fill="#7d786a" letter-spacing="2">TODOMAKING · DOC → ACTIONABLE TASKS</text>
+
+  <!-- LEFT : input docs -->
+  <g transform="translate(50, 90)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="10" fill="#d4c391" letter-spacing="2">INPUT</text>
+    <g font-family="Inter" font-size="11" fill="#ece7d8">
+      <rect x="0" y="20"  width="160" height="44" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".4"/>
+      <text x="14" y="40">📧 Email — réunion</text>
+      <text x="14" y="55" font-size="9" fill="#7d786a">"contacter le fournisseur..."</text>
+
+      <rect x="0" y="80"  width="160" height="44" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".4"/>
+      <text x="14" y="100">📄 Compte-rendu</text>
+      <text x="14" y="115" font-size="9" fill="#7d786a">"prévoir le rapport mensuel"</text>
+
+      <rect x="0" y="140" width="160" height="44" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".4"/>
+      <text x="14" y="160">📊 Rapport projet</text>
+      <text x="14" y="175" font-size="9" fill="#7d786a">"organiser le point d'équipe"</text>
+
+      <rect x="0" y="200" width="160" height="44" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".4"/>
+      <text x="14" y="220">📝 Consigne</text>
+      <text x="14" y="235" font-size="9" fill="#7d786a">"valider la facture"</text>
+    </g>
+  </g>
+
+  <!-- MIDDLE : funnel + 5 steps -->
+  <g transform="translate(250, 110)">
+    <path d="M 0 30 L 200 30 L 160 160 L 40 160 Z" fill="url(#funnel)" stroke="#d4c391" stroke-opacity=".5"/>
+    <g font-family="JetBrains Mono" font-size="9" fill="#08090c" font-weight="600" text-anchor="middle">
+      <text x="100" y="55">1 · LECTURE</text>
+      <text x="100" y="80">2 · EXTRACTION</text>
+      <text x="100" y="105">3 · REFORMULATION</text>
+      <text x="100" y="130">4 · PRIORISATION</text>
+      <text x="100" y="155">5 · STRUCTURATION</text>
+    </g>
+    <text x="100" y="195" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#d4c391" letter-spacing="2">DUST AGENT</text>
+    <text x="100" y="215" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#7d786a">~ quelques secondes</text>
+
+    <!-- Arrows in -->
+    <path d="M -45 38 L 0 50" stroke="#d4c391" stroke-opacity=".55" fill="none"/>
+    <path d="M -45 80 L 0 80" stroke="#d4c391" stroke-opacity=".55" fill="none"/>
+    <path d="M -45 122 L 0 110" stroke="#d4c391" stroke-opacity=".55" fill="none"/>
+    <path d="M -45 162 L 0 140" stroke="#d4c391" stroke-opacity=".55" fill="none"/>
+  </g>
+
+  <!-- RIGHT : structured tasks output -->
+  <g transform="translate(500, 90)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="10" fill="#b8e62f" letter-spacing="2">OUTPUT</text>
+    <g font-family="Inter" font-size="11">
+      <rect x="0" y="20"  width="260" height="40" rx="4" fill="#14171f" stroke="#b8e62f" stroke-opacity=".6"/>
+      <text x="14" y="38" fill="#ece7d8" font-weight="600">Contacter fournisseur matériel</text>
+      <text x="14" y="52" fill="#7d786a" font-size="9">HAUTE · Vendredi</text>
+
+      <rect x="0" y="68"  width="260" height="40" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".5"/>
+      <text x="14" y="86" fill="#ece7d8" font-weight="600">Rédiger rapport mensuel</text>
+      <text x="14" y="100" fill="#7d786a" font-size="9">MOYENNE · non spécifié</text>
+
+      <rect x="0" y="116" width="260" height="40" rx="4" fill="#14171f" stroke="#d4c391" stroke-opacity=".5"/>
+      <text x="14" y="134" fill="#ece7d8" font-weight="600">Organiser point équipe</text>
+      <text x="14" y="148" fill="#7d786a" font-size="9">MOYENNE · mois prochain</text>
+
+      <rect x="0" y="164" width="260" height="40" rx="4" fill="#14171f" stroke="#5bc4e8" stroke-opacity=".4"/>
+      <text x="14" y="182" fill="#ece7d8" font-weight="600">Valider facture</text>
+      <text x="14" y="196" fill="#7d786a" font-size="9">BASSE · sans deadline</text>
+    </g>
+    <!-- Arrow from funnel -->
+    <path d="M -45 130 L 0 130" stroke="#b8e62f" stroke-opacity=".7" fill="none" marker-end="url(#tah)"/>
+  </g>
+  <defs><marker id="tah" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><polygon points="0 0, 6 3, 0 6" fill="#b8e62f"/></marker></defs>
+
+  <!-- Bottom impact strip -->
+  <g transform="translate(36, 410)">
+    <text x="0" y="0" font-family="JetBrains Mono" font-size="10" fill="#7d786a" letter-spacing="2">IMPACT MESURÉ ·</text>
+    <text x="160" y="0" font-family="JetBrains Mono" font-size="11" fill="#d4c391">−2h30/sem  ·  100% capture  ·  0 hallucination  ·  +40% productivité</text>
+  </g>
+</svg>`
+  };
+
+  // ============================================================
+  // VITRINE — open / close / render
+  // ============================================================
+  const vitrine = document.getElementById('vitrine');
+  const vitrineInner = document.getElementById('vitrine-inner');
+  function escapeHTML(s) { return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+  function renderVitrine(key) {
+    const p = PROJECTS[key];
+    if (!p) return;
+    const lang = currentLang;
+    const titles = ['Synopsis', 'Métriques clés', 'Galerie', 'Stack technique'];
+    const titlesEn = ['Synopsis', 'Key metrics', 'Gallery', 'Tech stack'];
+    const T = lang === 'en' ? titlesEn : titles;
+
+    let galleryHTML = '';
+    if (p.images && p.images.length) {
+      galleryHTML = p.images.map(img => `
+        <figure>
+          <img loading="lazy" src="${img.src}" alt="${escapeHTML(img['cap_'+lang] || '')}" data-zoom="1"/>
+          <figcaption style="font-family:var(--mono);font-size:.75rem;color:var(--ink-mute);margin-top:.45rem;letter-spacing:.05em;">${escapeHTML(img['cap_'+lang] || '')}</figcaption>
+        </figure>
+      `).join('');
+    } else if (p.svg && SVGS[p.svg]) {
+      galleryHTML = SVGS[p.svg];
+    }
+
+    const metricsHTML = p.metrics.map(m => `
+      <div class="metric-tile">
+        <div class="metric-tile__v ${m.cls || ''}">${m.v}<span class="suf">${m.s || ''}</span></div>
+        <div class="metric-tile__l">${escapeHTML(m['l_'+lang] || '')}</div>
+      </div>
+    `).join('');
+
+    const stackHTML = p.stack.map(s => `<span>${escapeHTML(s)}</span>`).join('');
+
+    vitrineInner.innerHTML = `
+      <div class="vitrine__num">${p.num} · Cabinet Kinvi</div>
+      <h2 class="vitrine__title" id="vitrine-title">${p.title[lang]}</h2>
+      <p class="vitrine__sub">${p.sub[lang]}</p>
+      <div class="vitrine__meta">${p.meta.map(m => `<span>${escapeHTML(m)}</span>`).join('')}</div>
+      <p class="vitrine__lede">${p.lede[lang]}</p>
+      <div class="vitrine__body">${p.body[lang]}</div>
+
+      <h3 class="vitrine__h">${T[1]}</h3>
+      <div class="metrics-grid">${metricsHTML}</div>
+
+      <h3 class="vitrine__h">${T[2]}</h3>
+      <div class="gallery">${galleryHTML}</div>
+
+      <h3 class="vitrine__h">${T[3]}</h3>
+      <div class="stack-list">${stackHTML}</div>
+    `;
+    vitrine.dataset.key = key;
+  }
+
+  function openVitrine(key) {
+    renderVitrine(key);
+    vitrine.classList.add('open');
+    vitrine.setAttribute('aria-hidden', 'false');
+    document.getElementById('vitrine-panel').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeVitrine() {
+    vitrine.classList.remove('open');
+    vitrine.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', closeVitrine));
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('lightbox').classList.contains('on')) closeLightbox();
+      else if (vitrine.classList.contains('open')) closeVitrine();
+    }
+  });
+
+  // ============================================================
+  // LIGHTBOX
+  // ============================================================
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+  function openLightbox(src, alt) {
+    lightboxImg.src = src; lightboxImg.alt = alt || '';
+    lightbox.classList.add('on'); lightbox.setAttribute('aria-hidden', 'false');
+  }
+  function closeLightbox() {
+    lightbox.classList.remove('on'); lightbox.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { lightboxImg.src = ''; }, 350);
+  }
+  // Delegate zoom on any gallery img
+  document.addEventListener('click', e => {
+    const img = e.target.closest('.gallery img[data-zoom]');
+    if (img) openLightbox(img.src, img.alt);
+  });
+
+  // ============================================================
+  // STAGE — Three.js museum room
+  // ============================================================
+  (function museum() {
+    if (typeof THREE === 'undefined') return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stage = document.getElementById('stage');
+    const canvas = document.getElementById('stage-canvas');
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x08090c, 1);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x08090c, 12, 28);
+
+    const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+    camera.position.set(0, 2.4, 9);
+
+    function size() {
+      const w = stage.clientWidth, h = stage.clientHeight;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    size(); window.addEventListener('resize', size);
+
+    // ---- Floor (marble dark with subtle reflection look)
+    const floorGeo = new THREE.PlaneGeometry(60, 60, 1, 1);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0d0f14, roughness: 0.85, metalness: 0.18 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = 0;
+    scene.add(floor);
+
+    // Faint floor grid
+    const grid = new THREE.GridHelper(40, 40, 0x2a2820, 0x1a1c14);
+    grid.material.transparent = true; grid.material.opacity = 0.18;
+    grid.position.y = 0.001;
+    scene.add(grid);
+
+    // ---- Lighting
+    scene.add(new THREE.AmbientLight(0x1a1c1f, 1.2));
+
+    // Soft hemisphere
+    scene.add(new THREE.HemisphereLight(0x3a3220, 0x080808, 0.35));
+
+    // ---- Plinth (pedestal) factory
+    function buildPlinth(x, z, color = 0x1a1d27) {
+      const group = new THREE.Group();
+      // Plinth body
+      const plinthGeo = new THREE.BoxGeometry(1.4, 1.5, 1.4);
+      const plinthMat = new THREE.MeshStandardMaterial({ color, roughness: 0.65, metalness: 0.1 });
+      const plinth = new THREE.Mesh(plinthGeo, plinthMat);
+      plinth.position.y = 0.75;
+      group.add(plinth);
+      // Top rim (gold trim)
+      const rimGeo = new THREE.BoxGeometry(1.5, 0.04, 1.5);
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0xd4c391, roughness: 0.45, metalness: 0.6 });
+      const rim = new THREE.Mesh(rimGeo, rimMat);
+      rim.position.y = 1.52;
+      group.add(rim);
+      // Spotlight overhead
+      const spot = new THREE.SpotLight(0xfef3c7, 1.5, 8, Math.PI / 6, 0.5, 1.5);
+      spot.position.set(x, 5.5, z);
+      spot.target.position.set(x, 0, z);
+      scene.add(spot);
+      scene.add(spot.target);
+      group.position.set(x, 0, z);
+      scene.add(group);
+      return { group, plinth, rim, spot };
+    }
+
+    // ---- Artefact builders (5 distinctive pieces)
+    function artefactNBA() {
+      const g = new THREE.Group();
+      const ico = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.45, 0),
+        new THREE.MeshStandardMaterial({ color: 0xc97b56, roughness: .35, metalness: .55, emissive: 0x3a1f10, emissiveIntensity: .25 })
+      );
+      g.add(ico);
+      // Orbiting micro-spheres (players dots)
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        const r = 0.85;
+        const dot = new THREE.Mesh(
+          new THREE.SphereGeometry(0.04, 8, 8),
+          new THREE.MeshBasicMaterial({ color: 0xd4c391 })
+        );
+        dot.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+        dot.userData.angle = a;
+        g.add(dot);
+      }
+      g.userData.update = (dt) => {
+        ico.rotation.y += 0.005;
+        ico.rotation.x += 0.002;
+        g.children.forEach((c, i) => {
+          if (i === 0) return;
+          c.userData.angle += 0.012;
+          c.position.set(Math.cos(c.userData.angle) * 0.85, Math.sin(c.userData.angle * 1.3) * 0.18, Math.sin(c.userData.angle) * 0.85);
+        });
+      };
+      return g;
+    }
+
+    function artefactOlist() {
+      const g = new THREE.Group();
+      const globe = new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 24, 16),
+        new THREE.MeshBasicMaterial({ color: 0x5bc4e8, wireframe: true, transparent: true, opacity: 0.55 })
+      );
+      g.add(globe);
+      const core = new THREE.Mesh(
+        new THREE.SphereGeometry(0.42, 16, 12),
+        new THREE.MeshStandardMaterial({ color: 0x14171f, roughness: 1, metalness: 0 })
+      );
+      g.add(core);
+      // 27 location markers on sphere
+      for (let i = 0; i < 27; i++) {
+        const phi = Math.acos(-1 + (2 * i) / 27);
+        const theta = Math.sqrt(27 * Math.PI) * phi;
+        const m = new THREE.Mesh(
+          new THREE.SphereGeometry(0.025, 8, 8),
+          new THREE.MeshBasicMaterial({ color: 0xd4c391 })
+        );
+        m.position.setFromSphericalCoords(0.51, phi, theta);
+        g.add(m);
+      }
+      g.userData.update = () => { g.rotation.y += 0.004; };
+      return g;
+    }
+
+    function artefactMirakl() {
+      const g = new THREE.Group();
+      // Stack of cubes (cockpit / dashboard hierarchy)
+      const colors = [0xd4c391, 0x5bc4e8, 0xb8e62f, 0xc97b56];
+      for (let i = 0; i < 4; i++) {
+        const size = 0.7 - i * 0.13;
+        const c = new THREE.Mesh(
+          new THREE.BoxGeometry(size, 0.18, size),
+          new THREE.MeshStandardMaterial({ color: colors[i], roughness: .35, metalness: .55, transparent: true, opacity: .85 })
+        );
+        c.position.y = i * 0.22 - 0.2;
+        c.userData.baseY = c.position.y;
+        c.userData.phase = i * 0.4;
+        g.add(c);
+      }
+      g.userData.update = (dt) => {
+        g.children.forEach((c, i) => {
+          c.rotation.y += 0.008 + i * 0.001;
+          c.position.y = c.userData.baseY + Math.sin(dt * 2 + c.userData.phase) * 0.04;
+        });
+      };
+      return g;
+    }
+
+    function artefactPayfit() {
+      const g = new THREE.Group();
+      // 8 nodes connected
+      const nodes = [];
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const r = 0.55;
+        const node = new THREE.Mesh(
+          new THREE.SphereGeometry(0.09, 16, 16),
+          new THREE.MeshStandardMaterial({ color: i === 0 ? 0xb8e62f : 0xd4c391, roughness: 0.3, metalness: 0.6, emissive: i === 0 ? 0x3a4a10 : 0x2a2615, emissiveIntensity: 0.4 })
+        );
+        node.position.set(Math.cos(a) * r, Math.sin(i * 0.7) * 0.15, Math.sin(a) * r);
+        nodes.push(node);
+        g.add(node);
+      }
+      // Connections
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xd4c391, transparent: true, opacity: 0.4 });
+      for (let i = 0; i < 8; i++) {
+        const next = (i + 1) % 8;
+        const geom = new THREE.BufferGeometry().setFromPoints([nodes[i].position, nodes[next].position]);
+        g.add(new THREE.Line(geom, lineMat));
+      }
+      g.userData.update = (dt) => { g.rotation.y += 0.006; };
+      return g;
+    }
+
+    function artefactTodo() {
+      const g = new THREE.Group();
+      // Inverted cone (funnel) + cubes feeding in
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.5, 0.7, 32, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xd4c391, roughness: 0.4, metalness: 0.55, side: THREE.DoubleSide, transparent: true, opacity: 0.5, wireframe: true })
+      );
+      cone.rotation.x = Math.PI;
+      g.add(cone);
+      // Tiny "documents" floating into the funnel
+      for (let i = 0; i < 6; i++) {
+        const doc = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.08, 0.10),
+          new THREE.MeshBasicMaterial({ color: 0xece7d8, side: THREE.DoubleSide })
+        );
+        const a = (i / 6) * Math.PI * 2;
+        doc.position.set(Math.cos(a) * 0.7, 0.5 + Math.sin(i) * 0.1, Math.sin(a) * 0.7);
+        doc.userData.angle = a;
+        doc.userData.phase = i;
+        g.add(doc);
+      }
+      g.userData.update = (dt) => {
+        cone.rotation.y += 0.005;
+        g.children.forEach((c, i) => {
+          if (i === 0) return;
+          c.userData.angle += 0.015;
+          const a = c.userData.angle;
+          const lift = (Math.sin(dt * 2 + c.userData.phase) + 1) * 0.5;
+          c.position.set(Math.cos(a) * 0.65 * (1 - lift * 0.5), 0.55 - lift * 0.6, Math.sin(a) * 0.65 * (1 - lift * 0.5));
+          c.lookAt(0, 0, 0);
+        });
+      };
+      return g;
+    }
+
+    // ---- Place 5 plinths in a semicircle facing camera
+    const RADIUS = 4.2;
+    const ANGLES = [Math.PI - 0.55, Math.PI - 0.275, Math.PI, Math.PI + 0.275, Math.PI + 0.55]; // back-arc facing forward
+    const ARTEFACT_BUILDERS = [artefactNBA, artefactOlist, artefactMirakl, artefactPayfit, artefactTodo];
+    const LABELS_FR = ['I · NBA — Salaire & Performance', 'II · Olist — E-commerce Brésil', 'III · Mirakl — Sales Command Center', 'IV · Payfit — Pipeline IA 8 agents', 'V · Todomaking — Doc → Tâches'];
+    const LABELS_EN = ['I · NBA — Salary & Performance', 'II · Olist — Brazil E-commerce', 'III · Mirakl — Sales Command Center', 'IV · Payfit — 8-agent AI Pipeline', 'V · Todomaking — Doc → Tasks'];
+    const KEYS = ORDER;
+
+    const installations = [];
+    ANGLES.forEach((a, i) => {
+      const x = Math.cos(a) * RADIUS;
+      const z = Math.sin(a) * RADIUS;
+      const { group: plinthGroup, plinth, rim, spot } = buildPlinth(x, z);
+      const art = ARTEFACT_BUILDERS[i]();
+      art.position.set(x, 2.2, z);
+      // Each artefact looks slightly toward center
+      art.lookAt(0, 2.2, 0);
+      scene.add(art);
+      installations.push({ key: KEYS[i], plinthGroup, plinth, rim, spot, art, x, z, label_fr: LABELS_FR[i], label_en: LABELS_EN[i] });
+    });
+
+    // ---- Walls: 5 frames behind the plinths (subtle)
+    ANGLES.forEach((a, i) => {
+      const x = Math.cos(a) * (RADIUS + 1.6);
+      const z = Math.sin(a) * (RADIUS + 1.6);
+      const wall = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.8, 2.6),
+        new THREE.MeshStandardMaterial({ color: 0x14171f, roughness: 0.95, metalness: 0.0 })
+      );
+      wall.position.set(x, 1.3, z);
+      wall.lookAt(0, 1.3, 0);
+      scene.add(wall);
+      // Frame
+      const frame = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.92, 2.72),
+        new THREE.MeshBasicMaterial({ color: 0xd4c391, side: THREE.DoubleSide, transparent: true, opacity: 0.15 })
+      );
+      frame.position.set(x, 1.3, z);
+      frame.lookAt(0, 1.3, 0);
+      // Push frame slightly behind wall
+      frame.translateZ(-0.01);
+      scene.add(frame);
+    });
+
+    // ---- Hover & click
+    const ray = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    const hoverLabel = document.getElementById('hover-label');
+    const hoverLabelText = document.getElementById('hover-label-text');
+    let hovered = null;
+
+    function getHits(e) {
+      const rect = stage.getBoundingClientRect();
+      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      ray.setFromCamera(mouse, camera);
+      const targets = installations.flatMap(i => [i.plinth, ...i.art.children, i.art]);
+      return ray.intersectObjects(targets, true);
+    }
+    function findInstallation(obj) {
+      return installations.find(i => i.plinth === obj || i.art === obj || i.art.children.includes(obj) || (obj.parent && (i.art === obj.parent || obj.parent.parent === i.art)));
+    }
+
+    stage.addEventListener('mousemove', e => {
+      if (drag.active) return;
+      const hits = getHits(e);
+      if (hits.length) {
+        const inst = findInstallation(hits[0].object);
+        if (inst) {
+          stage.style.cursor = 'pointer';
+          hovered = inst;
+          inst.rim.material.emissive = new THREE.Color(0xd4c391);
+          inst.rim.material.emissiveIntensity = 0.6;
+          // Label
+          const rect = stage.getBoundingClientRect();
+          hoverLabel.style.left = (e.clientX - rect.left) + 'px';
+          hoverLabel.style.top = (e.clientY - rect.top) + 'px';
+          hoverLabelText.textContent = currentLang === 'en' ? inst.label_en : inst.label_fr;
+          hoverLabel.classList.add('on');
+          installations.forEach(i => { if (i !== inst) { i.rim.material.emissive = new THREE.Color(0x000000); i.rim.material.emissiveIntensity = 0; }});
+          return;
+        }
+      }
+      // Default
+      stage.style.cursor = '';
+      hovered = null;
+      hoverLabel.classList.remove('on');
+      installations.forEach(i => { i.rim.material.emissive = new THREE.Color(0x000000); i.rim.material.emissiveIntensity = 0; });
+    });
+
+    stage.addEventListener('click', e => {
+      if (drag.moved) return;
+      const hits = getHits(e);
+      if (hits.length) {
+        const inst = findInstallation(hits[0].object);
+        if (inst) openVitrine(inst.key);
+      }
+    });
+
+    // ---- Drag rotation (around Y)
+    let camAngle = 0; // radians offset
+    let camTarget = 0;
+    const drag = { active: false, x: 0, moved: false };
+    stage.addEventListener('mousedown', e => { drag.active = true; drag.x = e.clientX; drag.moved = false; stage.classList.add('dragging'); });
+    window.addEventListener('mouseup', () => { drag.active = false; stage.classList.remove('dragging'); setTimeout(() => drag.moved = false, 50); });
+    window.addEventListener('mousemove', e => {
+      if (!drag.active) return;
+      const dx = e.clientX - drag.x;
+      drag.x = e.clientX;
+      if (Math.abs(dx) > 2) drag.moved = true;
+      camTarget -= dx * 0.005;
+      // Clamp
+      const limit = 0.65;
+      camTarget = Math.max(-limit, Math.min(limit, camTarget));
+    });
+    // Touch
+    stage.addEventListener('touchstart', e => { if (e.touches.length === 1) { drag.active = true; drag.x = e.touches[0].clientX; drag.moved = false; }}, { passive: true });
+    window.addEventListener('touchend', () => { drag.active = false; });
+    window.addEventListener('touchmove', e => {
+      if (!drag.active || e.touches.length !== 1) return;
+      const dx = e.touches[0].clientX - drag.x;
+      drag.x = e.touches[0].clientX;
+      if (Math.abs(dx) > 2) drag.moved = true;
+      camTarget -= dx * 0.005;
+      camTarget = Math.max(-0.65, Math.min(0.65, camTarget));
+    }, { passive: true });
+
+    // Map pin navigation
+    document.querySelectorAll('.stage__map .pin').forEach(pin => {
+      pin.addEventListener('click', () => {
+        const idx = parseInt(pin.dataset.go, 10);
+        // Centre la caméra approximativement face à l'œuvre i
+        const wantAngle = (idx - 2) * 0.275; // -0.55, -0.275, 0, 0.275, 0.55
+        camTarget = wantAngle;
+        // Highlight pin
+        document.querySelectorAll('.stage__map .pin').forEach(p => p.classList.remove('active'));
+        pin.classList.add('active');
+        // After motion, open vitrine if a second click
+        setTimeout(() => openVitrine(KEYS[idx]), 700);
+      });
+    });
+
+    // ---- Animate
+    let t0 = performance.now();
+    function animate() {
+      const t = performance.now();
+      const dt = (t - t0) / 1000;
+      camAngle += (camTarget - camAngle) * 0.08;
+      camera.position.x = Math.sin(camAngle) * 9;
+      camera.position.z = Math.cos(camAngle) * 9;
+      camera.position.y = 2.4;
+      camera.lookAt(0, 2.0, 0);
+
+      installations.forEach(i => { if (i.art.userData.update) i.art.userData.update(dt); });
+
+      renderer.render(scene, camera);
+      if (!reduce) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  })();
+
+  // Initial language
+  applyLang('fr');
+</script>
+
+</body>
+</html>

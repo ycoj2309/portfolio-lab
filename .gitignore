@@ -1,0 +1,25 @@
+# Claude session data (private)
+.claude/
+
+# Temp files
+*.tmp
+*.tmp2
+
+# Draft & private files
+draft/
+Tuto Github/
+Critères Notation/
+Dust/
+mes liens/
+mon cv/
+index/
+pasted-text-*.txt
+Projet Portfolio*.txt
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node
+node_modules/

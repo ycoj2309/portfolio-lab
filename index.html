@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kinvi Cognitive Space Station — Portfolio Jahdiel Kinvi</title>
+  <meta name="description"
+    content="Portfolio immersif de Jahdiel Kinvi — Data Analyst & Coordinateur de Projets. Station spatiale cognitive dédiée à l'IA, la Data et le Business.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@400;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#050a14">
+</head>
+
+<body>
+
+  <!-- ═══════════ TOPBAR ═══════════ -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-brand">
+      <span class="topbar-logo">⬡</span>
+      <span class="topbar-title">KCSS</span>
+    </div>
+    <nav class="topbar-nav" id="topbarNav">
+      <a href="#projects-section" data-i18n="nav.projects">Modules</a>
+      <a href="#skills-section" data-i18n="nav.skills">Skills</a>
+      <a href="#certifications-section" data-i18n="nav.certs">Certifications</a>
+      <a href="#contact-section" data-i18n="nav.contact">Contact</a>
+    </nav>
+    <div class="topbar-actions">
+      <a href="https://www.linkedin.com/in/jahdiel-k" target="_blank" rel="noopener" class="topbar-icon"
+        title="LinkedIn">in</a>
+      <a href="https://github.com/ycoj2309" target="_blank" rel="noopener" class="topbar-icon" title="GitHub">gh</a>
+      <button id="soundToggle" class="topbar-btn" title="Son">🔇</button>
+      <button id="langToggle" class="topbar-btn lang-btn">FR / EN</button>
+    </div>
+  </header>
+
+  <!-- ═══════════ ÉCRAN 1 : PORTAIL ═══════════ -->
+  <section class="portal" id="portal">
+    <canvas id="starCanvas"></canvas>
+    <div class="portal-gate">
+      <div class="gate-frame">
+        <div class="gate-ring ring-outer"></div>
+        <div class="gate-ring ring-mid"></div>
+        <div class="gate-ring ring-inner"></div>
+        <div class="gate-scan"></div>
+      </div>
+      <div class="portal-content">
+        <p class="portal-kicker" data-i18n="portal.kicker">STATION COGNITIVE ORBITALE</p>
+        <h1 class="portal-title">KINVI<br>COGNITIVE<br>SPACE STATION</h1>
+        <p class="portal-sub" data-i18n="portal.sub">Centre de recherche orbital dédié à l'Intelligence Artificielle et
+          à la Data Science appliquée au Business</p>
+        <div class="portal-cta">
+          <span class="portal-pulse"></span>
+          <span data-i18n="portal.cta">[ CLIQUEZ POUR ENTRER ]</span>
+        </div>
+      </div>
+      <div class="portal-badges">
+        <span>6 <em data-i18n="portal.b1">Research Nodes</em></span>
+        <span>FR/EN</span>
+        <span>PWA</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ ÉCRAN 2 : TRANSITION ═══════════ -->
+  <div class="transition-overlay" id="transitionOverlay">
+    <div class="transition-scan"></div>
+    <div class="transition-halo"></div>
+    <div class="transition-text">
+      <p class="t-line t-line-1" data-i18n="transition.1">Scan biométrique en cours...</p>
+      <p class="t-line t-line-2" data-i18n="transition.2">Accès autorisé</p>
+      <p class="t-line t-line-3" data-i18n="transition.3">Ouverture du noyau cognitif</p>
+    </div>
+    <div class="transition-flash"></div>
+  </div>
+
+  <!-- ═══════════ ÉCRAN 3+ : INSIDE ═══════════ -->
+  <main class="inside" id="inside">
+
+    <!-- BAIE VITRÉE (Terre) -->
+    <div class="earth-viewport" id="earthViewport"></div>
+
+    <!-- CABINE CENTRALE -->
+    <section class="cabin" id="cabin">
+      <div class="cabin-glass">
+        <div class="cabin-hud">
+          <div class="hud-corner tl"></div>
+          <div class="hud-corner tr"></div>
+          <div class="hud-corner bl"></div>
+          <div class="hud-corner br"></div>
+        </div>
+        <div class="cabin-prompt" id="cabinPrompt">
+          <span class="cabin-icon">⬡</span>
+          <p data-i18n="cabin.prompt">Cliquez pour activer le scan cognitif</p>
+        </div>
+        <!-- Profile reveal -->
+        <div class="profile-holo" id="profileHolo">
+          <div class="holo-scanline"></div>
+          <div class="profile-header">
+            <div class="profile-avatar-ring">
+              <img src="Photos portfolio/Profil.webp" alt="Jahdiel Kinvi" class="profile-avatar">
+              <div class="avatar-orbit"></div>
+            </div>
+            <div class="profile-data" id="profileData"></div>
+          </div>
+          <div class="profile-summary" id="profileSummary"></div>
+        </div>
+      </div>
+      <!-- Couloirs latéraux -->
+      <div class="corridor corridor-left">
+        <div class="corridor-light"></div>
+        <span data-i18n="corridor.left">Restricted Access</span>
+      </div>
+      <div class="corridor corridor-right">
+        <div class="corridor-light"></div>
+        <span data-i18n="corridor.right">Module Offline</span>
+      </div>
+    </section>
+
+    <!-- GLOBE COGNITIF -->
+    <section class="globe-section" id="globe-section">
+      <div class="section-label">
+        <span class="label-line"></span>
+        <span data-i18n="globe.label">NOYAU COGNITIF CENTRAL</span>
+        <span class="label-line"></span>
+      </div>
+      <div class="globe-container" id="globeContainer"></div>
+    </section>
+
+    <!-- MODULES DE RECHERCHE (PROJETS) -->
+    <section class="projects-section" id="projects-section">
+      <div class="section-header">
+        <p class="section-kicker" data-i18n="projects.kicker">MODULES DE RECHERCHE</p>
+        <h2 data-i18n="projects.title">Archives de la station cognitive</h2>
+        <p class="section-desc" data-i18n="projects.desc">Chaque module représente un projet réel, documenté et
+          opérationnel.</p>
+      </div>
+      <div class="project-filters" id="projectFilters"></div>
+      <div class="project-grid" id="projectGrid"></div>
+    </section>
+
+    <!-- MODAL PROJET -->
+    <dialog class="project-modal" id="projectModal">
+      <button class="modal-close" id="modalClose" aria-label="Fermer">✕</button>
+      <div id="modalContent"></div>
+    </dialog>
+
+    <!-- SKILL MATRIX -->
+    <section class="skills-section" id="skills-section">
+      <div class="section-header">
+        <p class="section-kicker" data-i18n="skills.kicker">CONSOLE COGNITIVE</p>
+        <h2 data-i18n="skills.title">Skill Matrix — Cartographie des compétences</h2>
+      </div>
+      <div class="skill-rings" id="skillRings"></div>
+    </section>
+
+    <!-- CERTIFICATIONS -->
+    <section class="certs-section" id="certifications-section">
+      <div class="section-header">
+        <p class="section-kicker" data-i18n="certs.kicker">ACCRÉDITATIONS</p>
+        <h2 data-i18n="certs.title">Certifications, Diplômes & Distinctions</h2>
+      </div>
+      <div class="certs-grid" id="certsGrid"></div>
+      <div class="docs-grid" id="docsGrid"></div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="contact-section" id="contact-section">
+      <div class="section-header">
+        <p class="section-kicker" data-i18n="contact.kicker">CANAL DE COMMUNICATION</p>
+        <h2 data-i18n="contact.title">Prêt à collaborer sur des projets Data & IA</h2>
+      </div>
+      <div class="contact-grid">
+        <a href="mailto:jkinvi@eugeniaschool.com" class="contact-card">
+          <span class="contact-icon">✉</span>
+          <span>jkinvi@eugeniaschool.com</span>
+        </a>
+        <a href="https://www.linkedin.com/in/jahdiel-k" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-icon">in</span>
+          <span>linkedin.com/in/jahdiel-k</span>
+        </a>
+        <a href="https://github.com/ycoj2309" target="_blank" rel="noopener" class="contact-card">
+          <span class="contact-icon">gh</span>
+          <span>github.com/ycoj2309</span>
+        </a>
+      </div>
+      <div class="cv-section">
+        <h3 data-i18n="contact.cvTitle">Curriculum Vitae</h3>
+        <div class="cv-links">
+          <a href="mon cv/CV Jahdiel Kinvi - Eugenia School.pdf" target="_blank" rel="noopener" class="cv-btn">CV
+            Eugenia School</a>
+          <a href="mon cv/CV_Jahdiel_Kinvi_2026.pdf" target="_blank" rel="noopener" class="cv-btn">CV 2026</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="station-footer">
+      <p>© 2026 Kinvi Cognitive Space Station — <span data-i18n="footer.text">Construit avec passion pour la Data, l'IA
+          et le Business</span></p>
+      <div class="footer-links">
+        <a href="https://www.linkedin.com/in/jahdiel-k" target="_blank" rel="noopener">LinkedIn</a>
+        <a href="https://github.com/ycoj2309" target="_blank" rel="noopener">GitHub</a>
+        <a href="mailto:jkinvi@eugeniaschool.com">Email</a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- CHATBOT -->
+  <button class="bot-toggle" id="botToggle" aria-label="Assistant IA">⬡</button>
+  <div class="bot-panel" id="botPanel" aria-hidden="true">
+    <div class="bot-head">
+      <div><strong>KCSS Assistant</strong><span id="botStatus" data-i18n="bot.status">base locale</span></div>
+      <button id="botClose">✕</button>
+    </div>
+    <div class="bot-log" id="botLog"></div>
+    <div class="bot-chips">
+      <button data-question="projects" data-i18n="bot.chipProjects">Projets</button>
+      <button data-question="skills" data-i18n="bot.chipSkills">Skills</button>
+      <button data-question="contact" data-i18n="bot.chipContact">Contact</button>
+    </div>
+    <form class="bot-form" id="botForm">
+      <input type="text" id="botInput" data-i18n-placeholder="bot.placeholder" placeholder="Question sur mon profil..."
+        autocomplete="off">
+      <button type="submit" data-i18n="bot.send">Envoyer</button>
+    </form>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
