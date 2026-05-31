@@ -179,9 +179,9 @@ body.over-interact{cursor:pointer}
 .hud-emblem:hover{opacity:1;transform:scale(1.06);box-shadow:0 0 26px rgba(74,200,255,.6),inset 0 0 0 1px rgba(74,200,255,.7)}
 
 /* Adjust nav-back position so it doesn't overlap the emblem */
-.nav-back{top:78px !important}
+.nav-back{top:120px !important}
 /* nav-prev : sibling pour navigation historique, à droite du nav-back */
-.nav-prev{position:fixed;top:78px;left:140px;display:none;align-items:center;gap:6px;padding:7px 13px;background:rgba(176,132,255,.08);border:1px solid rgba(176,132,255,.4);color:#e8e0ff;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;cursor:pointer;transition:all .2s;z-index:14;text-decoration:none}
+.nav-prev{position:fixed;top:120px;left:140px;display:none;align-items:center;gap:6px;padding:7px 13px;background:rgba(176,132,255,.08);border:1px solid rgba(176,132,255,.4);color:#e8e0ff;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;cursor:pointer;transition:all .2s;z-index:14;text-decoration:none}
 .nav-prev.show{display:inline-flex}
 .nav-prev:hover{background:rgba(176,132,255,.18);border-color:rgba(176,132,255,.7);box-shadow:0 0 12px rgba(176,132,255,.3)}
 .nav-prev .arrow{display:none}
@@ -3404,8 +3404,8 @@ const SKILL_RINGS = [
 ];
 
 const crateGroup = new THREE.Group();
-crateGroup.position.set(5.2, -3.0, 1.5);
-crateGroup.rotation.y = -0.55;  /* angled toward camera */
+crateGroup.position.set(-5.2, -3.0, 1.5);
+crateGroup.rotation.y = 0.55;  /* angled toward camera */
 crateGroup.userData.activated = false;  /* hidden until globe reveals */
 inside.add(crateGroup);
 
@@ -3711,7 +3711,7 @@ SKILL_RINGS.forEach((ring, ri) => {
       const tex = new THREE.Texture(logoImg);
       tex.needsUpdate = true;
       const logoMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
-      logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), logoMat);
+      logoMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.65, 0.65), logoMat);
       logoMesh.position.set(x, y + 0.65, z);
       crateGroup.add(logoMesh);
       crystal.userData.logoMesh = logoMesh;
@@ -6127,23 +6127,30 @@ function tick(){
         const personalReveal = Math.max(0, Math.min(1, (CRATE_STATE.reveal * (totalSk + 6)) - order * 0.45));
         c.material.opacity = personalReveal * 0.95;
         c.material.emissiveIntensity = personalReveal * (0.65 + Math.sin(now * 1.4 + c.userData.basePulse) * 0.25);
-        if (c.userData.light) c.userData.light.intensity = personalReveal * (0.7 + Math.sin(now * 1.4 + c.userData.basePulse) * 0.3);
-        if (c.userData.logoMesh) c.userData.logoMesh.material.opacity = personalReveal * 0.92;
-        if (c.userData.lblMesh) c.userData.lblMesh.material.opacity = personalReveal * 0.92;
+        /* Crystal point light pulses with glow */
+        const glowPulse = 0.8 + Math.sin(now * 1.4 + c.userData.basePulse) * 0.35;
+        if (c.userData.light) c.userData.light.intensity = personalReveal * glowPulse * 1.1;
+        /* Logo rises from crate bottom (y=0.25) up to float height */
+        const riseY = c.userData.basePos.y + 0.1 + personalReveal * 0.6;
+        const floatY = Math.sin(now * 0.6 + c.userData.basePulse) * 0.05;
+        /* Logo opacity + glow burst on reveal */
+        if (c.userData.logoMesh){
+          c.userData.logoMesh.material.opacity = Math.min(1, personalReveal * 1.15);
+          c.userData.logoMesh.position.y = riseY + floatY * personalReveal;
+          c.userData.logoMesh.lookAt(camera.position);
+          /* Scale logo: starts small, grows to full */
+          const logoScale = 0.3 + personalReveal * 0.7;
+          c.userData.logoMesh.scale.setScalar(logoScale);
+        }
+        if (c.userData.lblMesh){
+          c.userData.lblMesh.material.opacity = personalReveal * 0.95;
+          c.userData.lblMesh.position.y = riseY + 0.42 + floatY * personalReveal;
+          c.userData.lblMesh.lookAt(camera.position);
+        }
         /* Rotation + floating */
         c.rotation.y += 0.005;
         c.rotation.x += 0.003;
-        const floatY = Math.sin(now * 0.6 + c.userData.basePulse) * 0.04;
         c.position.y = c.userData.baseY + floatY * personalReveal;
-        /* Logo and label face camera */
-        if (c.userData.logoMesh){
-          c.userData.logoMesh.position.y = c.userData.basePos.y + 0.65 + floatY * 0.5 * personalReveal;
-          c.userData.logoMesh.lookAt(camera.position);
-        }
-        if (c.userData.lblMesh){
-          c.userData.lblMesh.position.y = c.userData.basePos.y + 0.95 + floatY * 0.5 * personalReveal;
-          c.userData.lblMesh.lookAt(camera.position);
-        }
         /* Hover scale */
         const isHover = STATE.hoverCrystal === c;
         const targetScale = (isHover ? 1.45 : (0.85 + Math.sin(c.userData.basePulse) * 0.15)) * personalReveal;
