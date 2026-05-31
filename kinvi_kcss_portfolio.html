@@ -2326,88 +2326,10 @@ portal.add(energy);
   window.addEventListener('resize', resize);
   frame();
 
-  /* ── Warp mode state ── */
-  let warpMode = false, warpTick = 0, warpCb = null;
-  const shockwaves = [];
-
-  function addShockwave(){ shockwaves.push({ r:0, max:Math.max(W,H)*0.65, alpha:1 }); }
-
-  function drawWarp(ctx){
-    const WT = warpTick / 60; /* 0→1 over ~60 frames */
-    /* Speed lines converging to portal center */
-    const N_LINES = 80;
-    ctx.save();
-    for(let i=0;i<N_LINES;i++){
-      const ang = (i/N_LINES)*Math.PI*2;
-      const near = R_RING * (0.9 - WT*0.35);
-      const far  = Math.max(W,H) * (0.5 + WT*0.3);
-      const speed = 0.04 + Math.random()*0.08;
-      const a = 0.12 + WT*0.55;
-      ctx.beginPath();
-      ctx.moveTo(CX + Math.cos(ang)*near, CY + Math.sin(ang)*near);
-      ctx.lineTo(CX + Math.cos(ang)*far,  CY + Math.sin(ang)*far);
-      const col = Math.random() < 0.25 ? `rgba(255,165,60,${a*0.6})` : `rgba(74,220,255,${a})`;
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 0.8 + WT*1.2;
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    /* Shockwaves */
-    for(let i=shockwaves.length-1;i>=0;i--){
-      const sw = shockwaves[i];
-      sw.r += 14 + sw.r*0.06;
-      sw.alpha = Math.max(0, 1 - sw.r/sw.max);
-      if(sw.alpha<=0){ shockwaves.splice(i,1); continue; }
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(CX, CY, sw.r, 0, Math.PI*2);
-      ctx.strokeStyle = `rgba(74,220,255,${sw.alpha*0.8})`;
-      ctx.lineWidth = 3 * sw.alpha;
-      ctx.shadowColor = 'rgba(74,200,255,1)';
-      ctx.shadowBlur = 18;
-      ctx.stroke();
-      /* Secondary orange ring */
-      ctx.beginPath();
-      ctx.arc(CX, CY, sw.r*0.88, 0, Math.PI*2);
-      ctx.strokeStyle = `rgba(255,160,60,${sw.alpha*0.5})`;
-      ctx.lineWidth = 1.5 * sw.alpha;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    warpTick++;
-    if(warpTick >= 72){
-      warpMode = false; warpTick = 0;
-      if(warpCb){ const fn=warpCb; warpCb=null; fn(); }
-    }
-  }
-
-  /* Hook: after each frame, if warpMode is on, overlay warp on top */
-  const _warpCv = document.createElement('canvas');
-  _warpCv.style.cssText='position:fixed;inset:0;z-index:6;pointer-events:none;';
-  document.body.appendChild(_warpCv);
-  let _warpCtx = null;
-  function _warpLoop(){
-    if(!warpMode){ requestAnimationFrame(_warpLoop); return; }
-    _warpCv.width=W; _warpCv.height=H;
-    _warpCtx = _warpCv.getContext('2d');
-    _warpCtx.clearRect(0,0,W,H);
-    drawWarp(_warpCtx);
-    requestAnimationFrame(_warpLoop);
-  }
-  _warpLoop();
-
   window._portalDynamics = {
     pause(){ running = false; },
     resume(){ running = true; tick = 0; },
-    activateWarp(cb){
-      warpMode = true; warpTick = 0; warpCb = cb;
-      /* Fire 2 shockwaves with delay */
-      addShockwave();
-      setTimeout(addShockwave, 280);
-      setTimeout(addShockwave, 520);
-    }
+    activateWarp(cb){ if(cb) cb(); }
   };
 })();
 
@@ -4154,11 +4076,6 @@ function _portalChargeUp(originX, originY){
   setTimeout(()=>Audio.blip(990, 0.15, 'sine', 0.20), 450);
   setTimeout(()=>Audio.blip(1320, 0.18, 'triangle', 0.24), 650);
   setTimeout(()=>Audio.blip(1760, 0.22, 'triangle', 0.20), 880);
-
-  /* ── Phase 2 (350ms): warp speed lines + shockwaves on portal-dynamic canvas ── */
-  setTimeout(()=>{
-    if(window._portalDynamics) window._portalDynamics.activateWarp(null);
-  }, 350);
 
   /* ── Phase 3 (900ms): ripple at click origin ── */
   setTimeout(()=>{
