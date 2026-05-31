@@ -722,11 +722,50 @@ body.over-interact{cursor:pointer}
 .plv-lbl{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:6.5px;letter-spacing:.2em;color:rgba(74,200,255,.36);text-transform:uppercase;white-space:nowrap;pointer-events:none;background:rgba(1,4,12,.5);padding:1px 6px;border-radius:2px}
 @media(max-width:520px){.proj-live-wrap{margin-top:5px;border-radius:3px}.plv-lbl{font-size:5.5px;letter-spacing:.14em}}
 
+/* ── Loading screen ── */
+#loading-screen{position:fixed;inset:0;z-index:999;background:#010306;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;transition:opacity .9s ease}
+#loading-screen.hidden{opacity:0;pointer-events:none}
+.load-logo{width:90px;height:90px;border-radius:50%;background:url('jcss_logo.png') center/cover;box-shadow:0 0 30px rgba(74,200,255,.45);animation:load-pulse 1.8s ease-in-out infinite}
+@keyframes load-pulse{0%,100%{box-shadow:0 0 18px rgba(74,200,255,.3)}50%{box-shadow:0 0 55px rgba(74,200,255,.75)}}
+.load-bar-track{width:220px;height:2px;background:rgba(74,200,255,.12)}
+.load-bar-fill{height:100%;width:0%;background:rgba(74,200,255,.9);box-shadow:0 0 8px rgba(74,200,255,.8);transition:width .3s ease}
+.load-label{font-family:var(--mono);font-size:8.5px;letter-spacing:.44em;color:rgba(74,200,255,.55)}
+
+/* ── Room guide (first-time overlay, bottom-left) ── */
+#room-guide{position:fixed;bottom:72px;left:26px;z-index:25;background:rgba(2,8,20,.95);border:1px solid rgba(74,200,255,.32);backdrop-filter:blur(16px);padding:18px 22px 14px;font-family:var(--mono);opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease;pointer-events:none;width:260px}
+#room-guide.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.rg-title{font-size:8.5px;letter-spacing:.4em;color:rgba(74,200,255,.8);margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid rgba(74,200,255,.18)}
+.rg-items{display:flex;flex-direction:column;gap:8px;margin-bottom:13px}
+.rg-item{display:flex;align-items:flex-start;gap:9px;font-size:8.5px;letter-spacing:.1em;color:rgba(185,210,235,.72);line-height:1.55}
+.rg-item .rg-icon{color:rgba(74,200,255,.55);flex-shrink:0}
+.rg-item strong{color:rgba(220,235,250,.95);letter-spacing:.2em;font-weight:600}
+.rg-dismiss{font-family:var(--mono);font-size:8px;letter-spacing:.3em;color:rgba(74,200,255,.65);background:none;border:1px solid rgba(74,200,255,.22);padding:6px 0;cursor:pointer;width:100%;transition:all .2s}
+.rg-dismiss:hover{background:rgba(74,200,255,.07);border-color:rgba(74,200,255,.55);color:#dff2ff}
+
 </style>
 </head>
 <body>
 
 <div id="portal-bg" aria-hidden="true"></div>
+<!-- Loading screen — fades out after first render -->
+<div id="loading-screen" aria-hidden="true">
+  <div class="load-logo"></div>
+  <div class="load-bar-track"><div class="load-bar-fill" id="load-bar-fill"></div></div>
+  <div class="load-label" id="load-label">INITIALIZING COGNITIVE SYSTEMS</div>
+</div>
+
+<!-- Room guide — shown once on first room entry -->
+<div id="room-guide" role="dialog" aria-label="Station navigation guide">
+  <div class="rg-title">◈ NAVIGATION GUIDE</div>
+  <div class="rg-items">
+    <div class="rg-item"><span class="rg-icon">▸</span><span><strong>DOORS</strong> — click to open a project</span></div>
+    <div class="rg-item"><span class="rg-icon">▸</span><span><strong>CARGO CRATE</strong> — click button to reveal skills</span></div>
+    <div class="rg-item"><span class="rg-icon">▸</span><span><strong>CONTACTS</strong> — click the floating panels</span></div>
+    <div class="rg-item"><span class="rg-icon">▸</span><span><strong>PROFILE</strong> — click the central unit to scan</span></div>
+  </div>
+  <button class="rg-dismiss" id="rg-dismiss">◈ UNDERSTOOD — ENTER STATION</button>
+</div>
+
 <canvas id="stage"></canvas>
 <canvas id="portal-dynamic" aria-hidden="true"></canvas>
 
@@ -808,7 +847,7 @@ body.over-interact{cursor:pointer}
 <!-- Project Shelf — miniatures catalog -->
 <div class="proj-shelf" id="proj-shelf">
   <div class="proj-shelf-head">
-    <span>◈ PROJECT CATALOG — 4 NODES</span>
+    <span>◈ PROJECT CATALOG — 5 NODES</span>
     <button class="proj-shelf-close" id="proj-shelf-close" aria-label="Close project shelf">×</button>
   </div>
   <div class="proj-shelf-grid" id="proj-shelf-grid"></div>
@@ -825,7 +864,7 @@ body.over-interact{cursor:pointer}
     <div class="analytics-bar-lbl">MODULES EXPLORÉS</div>
     <div class="analytics-bar-track"><div class="analytics-bar-fill" id="a-bar" style="width:0%"></div></div>
   </div>
-  <div class="analytics-row"><span>PROJETS VISITÉS</span><span class="a-val" id="a-modules">0 / 4</span></div>
+  <div class="analytics-row"><span>PROJETS VISITÉS</span><span class="a-val" id="a-modules">0 / 5</span></div>
   <div class="analytics-row"><span>CRATE OUVERTE</span><span class="a-val" id="a-crate">0×</span></div>
   <div class="analytics-row"><span>PROFIL SCANNÉ</span><span class="a-val" id="a-profile">—</span></div>
   <div class="analytics-row"><span>LANGUE</span><span class="a-val" id="a-lang">EN</span></div>
@@ -1729,11 +1768,37 @@ const Audio = (() => {
 /* ════════════════════════════════════════════════════════════════════════════
    3. THREE.JS SCENE SETUP
    ════════════════════════════════════════════════════════════════════════════ */
+/* ── Loading screen progress ── */
+(function(){
+  const fill = document.getElementById('load-bar-fill');
+  const label = document.getElementById('load-label');
+  let pct = 0;
+  const steps = ['LOADING ASSETS', 'BUILDING SCENE', 'CALIBRATING SENSORS', 'READY'];
+  let step = 0;
+  const iv = setInterval(() => {
+    pct = Math.min(pct + Math.random() * 18 + 4, 88);
+    if (fill) fill.style.width = pct + '%';
+    const s = Math.floor(pct / 30);
+    if (s !== step && s < steps.length && label) { step = s; label.textContent = steps[step]; }
+  }, 200);
+  window._hideLoadScreen = function(){
+    clearInterval(iv);
+    if (fill) fill.style.width = '100%';
+    if (label) label.textContent = 'SYSTEMS ONLINE';
+    setTimeout(() => {
+      const ls = document.getElementById('loading-screen');
+      if (ls){ ls.classList.add('hidden'); setTimeout(() => { if(ls.parentNode) ls.remove(); }, 950); }
+    }, 450);
+  };
+})();
+
 const canvas = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x010306, 0); /* transparent during portal idle – concept bg shows through */
+/* Hide loading screen after first render frame */
+requestAnimationFrame(() => requestAnimationFrame(() => { if(window._hideLoadScreen) window._hideLoadScreen(); }));
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x020608, 0.014);
@@ -4043,8 +4108,22 @@ function finishRoomTransition(){
   }, 450);
   /* Show cabin hint after CIU has locked in place */
   setTimeout(() => { cabinHintEl.classList.add('show'); }, 2300);
+  /* Show room guide once per session */
+  if (!sessionStorage.getItem('jcss_guide_shown')) {
+    sessionStorage.setItem('jcss_guide_shown', '1');
+    const rg = document.getElementById('room-guide');
+    if (rg) {
+      setTimeout(() => rg.classList.add('show'), 3200);
+      /* Auto-dismiss after 12s */
+      setTimeout(() => rg.classList.remove('show'), 15200);
+    }
+  }
   refreshNavBack();
 }
+/* Room guide dismiss button */
+document.getElementById('rg-dismiss').addEventListener('click', () => {
+  document.getElementById('room-guide').classList.remove('show');
+});
 
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -4340,8 +4419,29 @@ document.addEventListener('keydown', (e) => {
     if (!CINE.active && STATE.phase === 'idle') startCinematic(window.innerWidth/2, window.innerHeight/2);
   }
   if (e.code === 'Escape'){
-    if (document.getElementById('profile').classList.contains('show')) closeProfile();
+    /* Close modals in priority order */
+    const skillPopup  = document.getElementById('skill-popup');
+    const researchMod = document.getElementById('research-modal');
+    const finaleMod   = document.getElementById('finale-modal');
+    const futureMod   = document.getElementById('future-modal');
+    const projShelf   = document.getElementById('proj-shelf');
+    const roomGuide   = document.getElementById('room-guide');
+    if (skillPopup  && skillPopup.classList.contains('show'))  { document.getElementById('sp-close').click(); }
+    else if (researchMod && researchMod.classList.contains('show')) { try{ closeResearch(); }catch(ex){} }
+    else if (finaleMod   && finaleMod.classList.contains('show'))   { try{ closeFinale();   }catch(ex){} }
+    else if (futureMod   && futureMod.classList.contains('show'))   { try{ closeFuture();   }catch(ex){} }
+    else if (document.getElementById('profile').classList.contains('show')) closeProfile();
+    else if (projShelf   && projShelf.classList.contains('show'))   { document.getElementById('proj-shelf-close').click(); }
+    else if (roomGuide   && roomGuide.classList.contains('show'))   { roomGuide.classList.remove('show'); }
     else if (CINE.active) skipCinematic();
+  }
+  /* ← → arrow keys navigate gallery when research modal is open */
+  if (e.code === 'ArrowLeft' || e.code === 'ArrowRight'){
+    const rm = document.getElementById('research-modal');
+    if (rm && rm.classList.contains('show')){
+      const btn = rm.querySelector(e.code === 'ArrowLeft' ? '#gal-prev' : '#gal-next');
+      if (btn) btn.click();
+    }
   }
 });
 
