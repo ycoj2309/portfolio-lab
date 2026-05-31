@@ -148,16 +148,16 @@ body.over-interact{cursor:pointer}
 .prompt.gone{opacity:0;transform:translate(-50%,-50%) scale(.92);pointer-events:none}
 
 /* KCSS emblem (portal idle) */
-.kcss-emblem{width:min(220px,26vmin);height:min(220px,26vmin);position:fixed;left:50%;top:42%;transform:translate(-50%,-50%);z-index:8;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 55px rgba(2,6,14,0.78),0 0 60px rgba(74,200,255,.55),0 0 120px rgba(74,200,255,.28),inset 0 0 0 3px rgba(74,200,255,.55);opacity:0;pointer-events:none;animation:emblem-in 1.4s ease forwards .3s,emblem-pulse 4s ease-in-out infinite 2s}
+.kcss-emblem{width:min(320px,34vmin);height:min(320px,34vmin);position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);z-index:8;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 28px rgba(2,6,14,0.78),0 0 60px rgba(74,200,255,.55),0 0 120px rgba(74,200,255,.28),inset 0 0 0 3px rgba(74,200,255,.55);opacity:0;pointer-events:none;animation:emblem-in 1.4s ease forwards .3s,emblem-pulse 4s ease-in-out infinite 2s}
 .emblem-frag{position:fixed;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 36px rgba(74,200,255,.45);pointer-events:none;z-index:8}
 .emblem-frag-l{clip-path:polygon(0 0,50% 0,50% 100%,0 100%)}
 .emblem-frag-r{clip-path:polygon(50% 0,100% 0,100% 100%,50% 100%)}
-@keyframes emblem-split-l{0%{transform:translateX(0);opacity:1;filter:brightness(1)}20%{filter:brightness(2.8)}100%{transform:translateX(-110px) scale(.7);opacity:0}}
-@keyframes emblem-split-r{0%{transform:translateX(0);opacity:1;filter:brightness(1)}20%{filter:brightness(2.8)}100%{transform:translateX(110px) scale(.7);opacity:0}}
+@keyframes emblem-split-l{0%{transform:translateX(0);opacity:1;filter:brightness(1)}20%{filter:brightness(2.8)}100%{transform:translateX(-145px) scale(.7);opacity:0}}
+@keyframes emblem-split-r{0%{transform:translateX(0);opacity:1;filter:brightness(1)}20%{filter:brightness(2.8)}100%{transform:translateX(145px) scale(.7);opacity:0}}
 .emblem-frag.fly-l{animation:emblem-split-l .85s cubic-bezier(.4,0,.8,.6) forwards}
 .emblem-frag.fly-r{animation:emblem-split-r .85s cubic-bezier(.4,0,.8,.6) forwards}
 @keyframes emblem-in{from{opacity:0;transform:translate(-50%,-50%) scale(.7)}to{opacity:.95;transform:translate(-50%,-50%) scale(1)}}
-@keyframes emblem-pulse{0%,100%{box-shadow:0 0 0 55px rgba(2,6,14,0.78),0 0 32px rgba(74,200,255,.32),0 0 64px rgba(74,200,255,.18),inset 0 0 0 2px rgba(74,200,255,.4)}50%{box-shadow:0 0 0 55px rgba(2,6,14,0.78),0 0 42px rgba(74,200,255,.55),0 0 90px rgba(74,200,255,.28),inset 0 0 0 2px rgba(74,200,255,.7)}}
+@keyframes emblem-pulse{0%,100%{box-shadow:0 0 0 28px rgba(2,6,14,0.78),0 0 32px rgba(74,200,255,.32),0 0 64px rgba(74,200,255,.18),inset 0 0 0 2px rgba(74,200,255,.4)}50%{box-shadow:0 0 0 28px rgba(2,6,14,0.78),0 0 42px rgba(74,200,255,.55),0 0 90px rgba(74,200,255,.28),inset 0 0 0 2px rgba(74,200,255,.7)}}
 
 /* ── Iris portal canvas (portail 2 – camera aperture) ── */
 #iris-portal{position:fixed;inset:0;z-index:4;pointer-events:none;display:block}
