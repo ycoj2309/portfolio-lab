@@ -78,7 +78,7 @@ body.over-interact{cursor:pointer}
 }
 #portal-bg{
   position:fixed;inset:0;z-index:0;
-  background:url('portal_bg.png') no-repeat center/cover;
+  background:url('portal_bg.png') no-repeat center 80%/cover;
   transition:opacity .8s ease;
   pointer-events:none;
   animation:portal-breathe 12s ease-in-out infinite, portal-flicker 20s linear infinite;
@@ -674,6 +674,11 @@ body.over-interact{cursor:pointer}
   .finale-emblem{width:100px;height:100px}
   .future-card{padding:28px 20px}
   .future-trigger,.finale-trigger{font-size:8.5px;padding:8px 12px;letter-spacing:.2em}
+}
+
+/* Sur écran portrait (mobile/tablette), recentrer le fond */
+@media (orientation: portrait) {
+  #portal-bg { background-position: center center; }
 }
 
 @media (max-width: 720px){
