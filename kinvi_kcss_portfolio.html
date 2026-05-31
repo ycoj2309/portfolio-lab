@@ -147,6 +147,17 @@ body.over-interact{cursor:pointer}
 .prompt{position:fixed;left:50%;top:56%;transform:translate(-50%,-50%);z-index:8;text-align:center;font-family:var(--mono);pointer-events:none;transition:opacity .6s ease,transform .8s ease}
 .prompt.gone{opacity:0;transform:translate(-50%,-50%) scale(.92);pointer-events:none}
 
+/* ── Skill detail popup (mid-screen on crystal click) ── */
+#skill-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.92);z-index:50;background:rgba(2,8,20,.97);border:1px solid rgba(74,200,255,.45);backdrop-filter:blur(18px);padding:36px 44px 28px;width:min(340px,88vw);text-align:center;font-family:var(--mono);pointer-events:auto;opacity:0;transition:opacity .28s ease,transform .28s ease;display:none}
+#skill-popup.show{display:block;opacity:1;transform:translate(-50%,-50%) scale(1)}
+#skill-popup .sp-logo{width:88px;height:88px;margin:0 auto 18px;border-radius:50%;object-fit:contain;display:block;border:2px solid var(--sp-color,rgba(74,200,255,.6));box-shadow:0 0 22px var(--sp-glow,rgba(74,200,255,.3))}
+#skill-popup .sp-logo.hidden{display:none}
+#skill-popup .sp-name{font-size:13px;letter-spacing:.32em;color:rgba(220,235,250,.96);margin-bottom:6px;text-transform:uppercase}
+#skill-popup .sp-cat{font-size:9px;letter-spacing:.38em;color:var(--sp-color,rgba(74,200,255,.8));padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--sp-glow,rgba(74,200,255,.2))}
+#skill-popup .sp-desc{font-size:10.5px;letter-spacing:.1em;color:rgba(170,200,225,.78);line-height:1.65;margin-bottom:22px}
+#skill-popup .sp-close{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;color:rgba(74,200,255,.7);background:none;border:1px solid rgba(74,200,255,.25);padding:8px 22px;cursor:pointer;transition:all .2s}
+#skill-popup .sp-close:hover{color:#4ae3ff;border-color:#4ae3ff;background:rgba(74,200,255,.06)}
+
 /* KCSS emblem (portal idle) */
 .kcss-emblem{width:min(350px,36vh);height:min(350px,36vh);position:fixed;left:50%;top:47%;transform:translate(-50%,-50%);z-index:8;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 0 28px rgba(2,6,14,0.78),0 0 60px rgba(74,200,255,.55),0 0 120px rgba(74,200,255,.28),inset 0 0 0 3px rgba(74,200,255,.55);opacity:0;pointer-events:none;animation:emblem-in 1.4s ease forwards .3s,emblem-pulse 4s ease-in-out infinite 2s}
 .emblem-frag{position:fixed;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 36px rgba(74,200,255,.45);pointer-events:none;z-index:8}
@@ -840,6 +851,15 @@ body.over-interact{cursor:pointer}
 
 <!-- Skill Matrix is now an in-room 3D cargo crate (see scene setup) -->
 
+
+<!-- Skill detail popup (mid-screen) -->
+<div id="skill-popup" role="dialog" aria-modal="true">
+  <img id="sp-logo" class="sp-logo" src="" alt="">
+  <div id="sp-name" class="sp-name"></div>
+  <div id="sp-cat" class="sp-cat"></div>
+  <div id="sp-desc" class="sp-desc"></div>
+  <button class="sp-close" id="sp-close">◈ FERMER</button>
+</div>
 
 <!-- Profile modal -->
 <div class="profile" id="profile" role="dialog" aria-modal="true" aria-labelledby="profile-title">
@@ -1731,7 +1751,7 @@ const fillLight = new THREE.DirectionalLight(0x4080a0, 0.45);
 fillLight.position.set(-12, -5, 8);
 scene.add(fillLight);
 
-const coreLight = new THREE.PointLight(0x4ae3ff, 1.4, 50, 1.6);
+const coreLight = new THREE.PointLight(0x4ae3ff, 0.7, 50, 1.6);
 coreLight.position.set(0, 0, 1.5);
 scene.add(coreLight);
 const rimLight = new THREE.PointLight(0xaef0ff, 0.8, 30);
@@ -2467,7 +2487,7 @@ const ceilingLights = [];
 for (let i = 0; i < 8; i++){
   const ang = (i / 8) * Math.PI * 2;
   const r = 12;
-  const light = new THREE.PointLight(0xb0d5f0, 0.5, 18);
+  const light = new THREE.PointLight(0xb0d5f0, 0.28, 18);
   light.position.set(Math.cos(ang) * r, 7.4, Math.sin(ang) * r);
   roomShell.add(light);
   ceilingLights.push({ light, base: 0.5, phase: i * 0.7 });
@@ -2615,7 +2635,7 @@ const atmoGlow = new THREE.Mesh(
 earthGroup.add(atmoGlow);
 
 /* sun rim light */
-const sunLight = new THREE.DirectionalLight(0xfff4d8, 1.2);
+const sunLight = new THREE.DirectionalLight(0xfff4d8, 0.65);
 sunLight.position.set(80, 30, -60);
 inside.add(sunLight);
 
@@ -2647,7 +2667,7 @@ const corePoint = new THREE.Mesh(
 );
 cognitiveCore.add(corePoint);
 
-const coreCenterLight = new THREE.PointLight(0x4ae3ff, 1.5, 12);
+const coreCenterLight = new THREE.PointLight(0x4ae3ff, 0.8, 12);
 cognitiveCore.add(coreCenterLight);
 
 /* neural nodes — points on sphere surface, pulsing */
@@ -3384,8 +3404,8 @@ const SKILL_RINGS = [
 ];
 
 const crateGroup = new THREE.Group();
-crateGroup.position.set(-5.5, -3.0, -1.5);
-crateGroup.rotation.y = 0.45;  /* angled toward camera */
+crateGroup.position.set(5.2, -3.0, 1.5);
+crateGroup.rotation.y = -0.55;  /* angled toward camera */
 crateGroup.userData.activated = false;  /* hidden until globe reveals */
 inside.add(crateGroup);
 
@@ -4270,6 +4290,7 @@ function onSceneClick(e){
     if (modulesGroup.userData.activated) targets.push(...doorHitAreas);
     if (crateGroup.userData.activated){
       if (crateGroup.userData.btnHit) targets.push(crateGroup.userData.btnHit);
+      if (CRATE_STATE.open && CRATE_STATE.reveal > 0.4) targets.push(...skillCrystalHits);
     }
     if (contactGroup.userData.activated) targets.push(...contactBoxHits);
     const hits = targets.length ? raycaster.intersectObjects(targets, false) : [];
@@ -4277,6 +4298,12 @@ function onSceneClick(e){
       const obj = hits[0].object;
       if (obj.userData.isCabin){ openProfile(); e.stopPropagation(); return; }
       if (obj.userData.isCrateButton){ toggleCrate(); e.stopPropagation(); return; }
+      if (obj.userData.isCrystal || (obj.userData.crystalRef && obj.userData.crystalRef.userData.isCrystal)){
+        const crystal = obj.userData.crystalRef || obj;
+        showSkillPopup(crystal);
+        e.stopPropagation();
+        return;
+      }
       if (obj.userData.isContact){
         const c = obj.userData.contactRef;
         Audio.blip(1600, 0.08, 'sine', 0.16);
@@ -4389,6 +4416,38 @@ if (navPrevBtn){
   navPrevBtn.addEventListener('click', (e) => { e.stopPropagation(); navigateBack(); });
 }
 window.navigateBack = navigateBack;
+
+/* ── Skill popup mid-screen ── */
+function showSkillPopup(crystal){
+  const skill = crystal.userData.skill;
+  const ring  = crystal.userData.ring;
+  const lang  = STATE.lang;
+  const name  = skill['name_'+lang] || skill.name;
+  const desc  = skill['desc_'+lang] || skill.desc_en || '';
+  const cat   = lang === 'fr' ? ring.label_fr : ring.label_en;
+  const hex   = '#' + ring.color.toString(16).padStart(6,'0');
+  const popup = document.getElementById('skill-popup');
+  popup.style.setProperty('--sp-color', hex);
+  popup.style.setProperty('--sp-glow', hex + '44');
+  document.getElementById('sp-name').textContent = name;
+  document.getElementById('sp-cat').textContent  = cat;
+  document.getElementById('sp-desc').textContent = desc;
+  const imgEl = document.getElementById('sp-logo');
+  const li = LOGO_IMG[skill.name];
+  if(li && li.complete && li.naturalWidth > 0){
+    imgEl.src = li.src;
+    imgEl.classList.remove('hidden');
+    imgEl.style.borderColor = hex;
+    imgEl.style.boxShadow = `0 0 24px ${hex}55`;
+  } else { imgEl.classList.add('hidden'); }
+  popup.classList.add('show');
+  Audio.blip(1800, 0.05, 'sine', 0.09);
+}
+window.showSkillPopup = showSkillPopup;
+document.getElementById('sp-close').addEventListener('click', (e) => {
+  e.stopPropagation();
+  document.getElementById('skill-popup').classList.remove('show');
+});
 
 /* Restart entire experience — resets everything to portal idle */
 function restartExperience(){
