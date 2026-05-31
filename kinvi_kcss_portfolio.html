@@ -44,24 +44,48 @@ body.over-interact{cursor:pointer}
 
 /* ── Portail 1 – concept background ── */
 @keyframes portal-breathe{
-  0%,100%{ transform:scale(1.000); }
-  50%    { transform:scale(1.022); }
+  0%,100%{ transform:scale(1.000); filter:brightness(1) saturate(1); }
+  30%    { transform:scale(1.014); filter:brightness(1.06) saturate(1.1); }
+  50%    { transform:scale(1.022); filter:brightness(1.10) saturate(1.18); }
+  70%    { transform:scale(1.016); filter:brightness(1.07) saturate(1.12); }
 }
 @keyframes portal-flicker{
-  0%,3.9%,4.6%,29%,31%,69%,71.5%,100%{ filter:brightness(1) saturate(1); }
-  4%    { filter:brightness(0.82) saturate(0.88); }
-  4.3%  { filter:brightness(1.10) saturate(1.18); }
-  30%   { filter:brightness(0.91) saturate(0.94); }
-  70.5% { filter:brightness(0.94) saturate(0.97); }
-  71%   { filter:brightness(1.07) saturate(1.10); }
+  0%,100%{ filter:brightness(1) saturate(1); }
+  4%   { filter:brightness(0.78) saturate(0.85); }
+  4.4% { filter:brightness(1.15) saturate(1.25); }
+  8%   { filter:brightness(1) saturate(1); }
+  31%  { filter:brightness(0.88) saturate(0.92); }
+  31.6%{ filter:brightness(1.12) saturate(1.2); }
+  55%  { filter:brightness(1.05) saturate(1.08) hue-rotate(5deg); }
+  70%  { filter:brightness(0.92) saturate(0.96); }
+  70.8%{ filter:brightness(1.10) saturate(1.15); }
+  88%  { filter:brightness(1.04) saturate(1.06) hue-rotate(-3deg); }
+}
+/* Pre-activation ring charge burst */
+@keyframes portal-charge{
+  0%  { filter:brightness(1)   saturate(1)   hue-rotate(0deg); transform:scale(1); }
+  18% { filter:brightness(1.5) saturate(1.8) hue-rotate(12deg); transform:scale(1.01); }
+  35% { filter:brightness(0.9) saturate(1.4) hue-rotate(-6deg); transform:scale(1.025); }
+  55% { filter:brightness(2.0) saturate(2.2) hue-rotate(8deg);  transform:scale(1.03); }
+  75% { filter:brightness(1.6) saturate(2.0) hue-rotate(-3deg); transform:scale(1.025); }
+  100%{ filter:brightness(2.8) saturate(2.5) hue-rotate(0deg);  transform:scale(1.04); }
+}
+/* Flash overlay fade-out */
+@keyframes portal-flash-out{
+  0%  { opacity:0; }
+  12% { opacity:1; }
+  100%{ opacity:0; }
 }
 #portal-bg{
   position:fixed;inset:0;z-index:0;
   background:url('portal_bg.jpg') no-repeat center/cover;
   transition:opacity .8s ease;
   pointer-events:none;
-  animation:portal-breathe 10s ease-in-out infinite, portal-flicker 16s linear infinite;
+  animation:portal-breathe 12s ease-in-out infinite, portal-flicker 20s linear infinite;
   transform-origin:center center;
+}
+#portal-bg.portal-charging{
+  animation:portal-charge 1.3s ease-in forwards !important;
 }
 
 /* ── Portal dynamics canvas (particles, ring glow, lightning) ── */
@@ -2302,9 +2326,88 @@ portal.add(energy);
   window.addEventListener('resize', resize);
   frame();
 
+  /* ── Warp mode state ── */
+  let warpMode = false, warpTick = 0, warpCb = null;
+  const shockwaves = [];
+
+  function addShockwave(){ shockwaves.push({ r:0, max:Math.max(W,H)*0.65, alpha:1 }); }
+
+  function drawWarp(ctx){
+    const WT = warpTick / 60; /* 0→1 over ~60 frames */
+    /* Speed lines converging to portal center */
+    const N_LINES = 80;
+    ctx.save();
+    for(let i=0;i<N_LINES;i++){
+      const ang = (i/N_LINES)*Math.PI*2;
+      const near = R_RING * (0.9 - WT*0.35);
+      const far  = Math.max(W,H) * (0.5 + WT*0.3);
+      const speed = 0.04 + Math.random()*0.08;
+      const a = 0.12 + WT*0.55;
+      ctx.beginPath();
+      ctx.moveTo(CX + Math.cos(ang)*near, CY + Math.sin(ang)*near);
+      ctx.lineTo(CX + Math.cos(ang)*far,  CY + Math.sin(ang)*far);
+      const col = Math.random() < 0.25 ? `rgba(255,165,60,${a*0.6})` : `rgba(74,220,255,${a})`;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 0.8 + WT*1.2;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* Shockwaves */
+    for(let i=shockwaves.length-1;i>=0;i--){
+      const sw = shockwaves[i];
+      sw.r += 14 + sw.r*0.06;
+      sw.alpha = Math.max(0, 1 - sw.r/sw.max);
+      if(sw.alpha<=0){ shockwaves.splice(i,1); continue; }
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(CX, CY, sw.r, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(74,220,255,${sw.alpha*0.8})`;
+      ctx.lineWidth = 3 * sw.alpha;
+      ctx.shadowColor = 'rgba(74,200,255,1)';
+      ctx.shadowBlur = 18;
+      ctx.stroke();
+      /* Secondary orange ring */
+      ctx.beginPath();
+      ctx.arc(CX, CY, sw.r*0.88, 0, Math.PI*2);
+      ctx.strokeStyle = `rgba(255,160,60,${sw.alpha*0.5})`;
+      ctx.lineWidth = 1.5 * sw.alpha;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    warpTick++;
+    if(warpTick >= 72){
+      warpMode = false; warpTick = 0;
+      if(warpCb){ const fn=warpCb; warpCb=null; fn(); }
+    }
+  }
+
+  /* Hook: after each frame, if warpMode is on, overlay warp on top */
+  const _warpCv = document.createElement('canvas');
+  _warpCv.style.cssText='position:fixed;inset:0;z-index:6;pointer-events:none;';
+  document.body.appendChild(_warpCv);
+  let _warpCtx = null;
+  function _warpLoop(){
+    if(!warpMode){ requestAnimationFrame(_warpLoop); return; }
+    _warpCv.width=W; _warpCv.height=H;
+    _warpCtx = _warpCv.getContext('2d');
+    _warpCtx.clearRect(0,0,W,H);
+    drawWarp(_warpCtx);
+    requestAnimationFrame(_warpLoop);
+  }
+  _warpLoop();
+
   window._portalDynamics = {
     pause(){ running = false; },
-    resume(){ running = true; tick = 0; }
+    resume(){ running = true; tick = 0; },
+    activateWarp(cb){
+      warpMode = true; warpTick = 0; warpCb = cb;
+      /* Fire 2 shockwaves with delay */
+      addShockwave();
+      setTimeout(addShockwave, 280);
+      setTimeout(addShockwave, 520);
+    }
   };
 })();
 
@@ -4033,12 +4136,59 @@ function triggerEmblemSplit(){
 
 function startCinematic(originX, originY){
   if (CINE.active || STATE.roomEntered) return;
-  /* Animate iris open before starting the cinematic sequence */
-  if (window._irisPortal && document.getElementById('iris-portal').style.display !== 'none'){
-    window._irisPortal.animateOpen(() => _startCinematicCore(originX, originY));
-    return;
-  }
-  _startCinematicCore(originX, originY);
+  _portalChargeUp(originX, originY);
+}
+
+function _portalChargeUp(originX, originY){
+  /* ── Phase 0 : hide prompt immediately ── */
+  const _promptEl = document.getElementById('prompt');
+  if(_promptEl) _promptEl.classList.add('gone');
+  Audio.ensure();
+
+  /* ── Phase 1 (0ms): ring charge-up — CSS brightness surge + audio ramp ── */
+  const pbg = document.getElementById('portal-bg');
+  if(pbg) pbg.classList.add('portal-charging');
+  Audio.blip(330, 0.07, 'sine', 0.12);
+  setTimeout(()=>Audio.blip(495, 0.09, 'sine', 0.14), 130);
+  setTimeout(()=>Audio.blip(660, 0.12, 'sine', 0.16), 280);
+  setTimeout(()=>Audio.blip(990, 0.15, 'sine', 0.20), 450);
+  setTimeout(()=>Audio.blip(1320, 0.18, 'triangle', 0.24), 650);
+  setTimeout(()=>Audio.blip(1760, 0.22, 'triangle', 0.20), 880);
+
+  /* ── Phase 2 (350ms): warp speed lines + shockwaves on portal-dynamic canvas ── */
+  setTimeout(()=>{
+    if(window._portalDynamics) window._portalDynamics.activateWarp(null);
+  }, 350);
+
+  /* ── Phase 3 (900ms): ripple at click origin ── */
+  setTimeout(()=>{
+    if(originX !== undefined){
+      const r = document.createElement('div');
+      r.className='ripple';
+      r.style.left=originX+'px'; r.style.top=originY+'px';
+      document.body.appendChild(r);
+      setTimeout(()=>r.remove(), 1100);
+    }
+  }, 900);
+
+  /* ── Phase 4 (1100ms): white radial flash overlay ── */
+  setTimeout(()=>{
+    const flash = document.createElement('div');
+    flash.style.cssText='position:fixed;inset:0;z-index:38;pointer-events:none;background:radial-gradient(ellipse 60% 55% at 50% 45%,rgba(200,240,255,0.92) 0%,rgba(74,200,255,0.55) 35%,transparent 70%);animation:portal-flash-out 0.85s ease-out forwards';
+    document.body.appendChild(flash);
+    setTimeout(()=>flash.remove(), 900);
+  }, 1100);
+
+  /* ── Phase 5 (1300ms): iris opens → cinematic core ── */
+  setTimeout(()=>{
+    if(pbg) pbg.classList.remove('portal-charging');
+    const irisCv = document.getElementById('iris-portal');
+    if(window._irisPortal && irisCv && irisCv.style.display !== 'none'){
+      window._irisPortal.animateOpen(()=>_startCinematicCore(originX, originY));
+    } else {
+      _startCinematicCore(originX, originY);
+    }
+  }, 1300);
 }
 function _startCinematicCore(originX, originY){
   if (CINE.active || STATE.roomEntered) return;
