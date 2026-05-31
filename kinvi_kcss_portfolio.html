@@ -4337,12 +4337,8 @@ function refreshNavBack(){
   } else if (document.getElementById('profile').classList.contains('show')){
     label = t('nav_close'); visible = true; action = 'closeProfile';
   } else if (STATE.phase === 'room'){
-    /* Back ≠ Restart : visible uniquement si historique de navigation disponible */
-    if (STATE.phaseHistory && STATE.phaseHistory.length > 0){
-      label = t('nav_back') || '← BACK'; visible = true; action = 'navigateBack';
-    } else {
-      visible = false;
-    }
+    /* En room : Back reste caché (Restart = bouton dédié, nav-prev = historique) */
+    visible = false;
   } else if (CINE.active || STATE.phase === 'corridor_drift' || ROOM_TRANS.active){
     visible = false;
   }
