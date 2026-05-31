@@ -4263,8 +4263,12 @@ const pointer = new THREE.Vector2();
 let pointerNeedsCheck = false;
 
 function onPointerMove(e){
-  pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  /* Support both mouse (clientX) and touch (touches[0]) */
+  const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+  const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+  if (cx == null || cy == null) return;
+  pointer.x = (cx / window.innerWidth)  *  2 - 1;
+  pointer.y = (cy / window.innerHeight) * -2 + 1;
   pointerNeedsCheck = true;
   // module info follow cursor
   const info = document.getElementById('module-info');
@@ -4274,6 +4278,8 @@ function onPointerMove(e){
   }
 }
 window.addEventListener('pointermove', onPointerMove);
+/* Mobile: update pointer on touchstart so raycaster is ready before click fires */
+window.addEventListener('touchstart', onPointerMove, { passive: true });
 
 function checkRoomHover(){
   if (STATE.phase !== 'room') return;
@@ -4363,6 +4369,14 @@ function checkRoomHover(){
 }
 
 function onSceneClick(e){
+  /* On mobile, pointermove may not have fired at tap position —
+     always refresh pointer coords from the event itself */
+  const cx = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : null);
+  const cy = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : null);
+  if (cx != null && cy != null){
+    pointer.x = (cx / window.innerWidth)  *  2 - 1;
+    pointer.y = (cy / window.innerHeight) * -2 + 1;
+  }
   if (STATE.phase === 'room' && !document.getElementById('profile').classList.contains('show')){
     raycaster.setFromCamera(pointer, camera);
     const targets = [];
