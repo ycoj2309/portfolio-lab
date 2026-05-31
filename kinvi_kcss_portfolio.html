@@ -3469,8 +3469,8 @@ const SKILL_RINGS = [
 ];
 
 const crateGroup = new THREE.Group();
-crateGroup.position.set(-5.2, -3.0, 1.5);
-crateGroup.rotation.y = 0.55;  /* angled toward camera */
+crateGroup.position.set(-3.5, -3.0, 1.5);
+crateGroup.rotation.y = 0.45;  /* angled toward camera */
 crateGroup.scale.setScalar(0.5); /* compact size — doesn't block project doors */
 crateGroup.userData.activated = false;  /* hidden until globe reveals */
 inside.add(crateGroup);
@@ -4091,6 +4091,9 @@ function finishRoomTransition(){
   STATE.roomEntered = true;
   ROOM_HUD.classList.add('show');
   document.body.classList.add('in-room');
+  /* Wider FOV on portrait/mobile so crate + contacts stay in frame */
+  camera.fov = getRoomFov();
+  camera.updateProjectionMatrix();
   setTimeout(() => clearCaption(), 1500);
   /* fade steam */
   document.getElementById('steam').classList.remove('on');
@@ -4736,9 +4739,11 @@ soundBtn.addEventListener('click', (e) => {
   refreshSoundUI();
 });
 
+function getRoomFov(){ return window.innerWidth < window.innerHeight ? 72 : 56; }
 window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
+  if (STATE.phase === 'room' || STATE.phase === 'profile_open') camera.fov = getRoomFov();
   camera.updateProjectionMatrix();
 });
 
@@ -6066,7 +6071,9 @@ function tick(){
     // camera idle breathing + slight orbit response to mouse
     const bobX = Math.sin(now * 0.3) * 0.15 + pointer.x * 0.4;
     const bobY = Math.sin(now * 0.22) * 0.1 + pointer.y * 0.2;
-    const targetX = bobX;
+    /* On portrait/mobile, shift camera slightly left so crate is centred */
+    const portraitOffset = window.innerWidth < window.innerHeight ? -0.8 : 0;
+    const targetX = portraitOffset + bobX;
     const targetY = 1.2 + bobY;
     const targetZ = ROOM_Z + 14;
     camera.position.x = lerp(camera.position.x, targetX, 0.04);
