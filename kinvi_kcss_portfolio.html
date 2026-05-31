@@ -178,10 +178,10 @@ body.over-interact{cursor:pointer}
 .hud-emblem{position:fixed;left:26px;top:26px;width:36px;height:36px;border-radius:50%;background-size:cover;background-position:center;box-shadow:0 0 18px rgba(74,200,255,.35),inset 0 0 0 1px rgba(74,200,255,.45);z-index:12;opacity:.85;transition:opacity .3s,transform .3s,box-shadow .3s}
 .hud-emblem:hover{opacity:1;transform:scale(1.06);box-shadow:0 0 26px rgba(74,200,255,.6),inset 0 0 0 1px rgba(74,200,255,.7)}
 
-/* Adjust nav-back position so it doesn't overlap the emblem */
-.nav-back{top:120px !important}
-/* nav-prev : sibling pour navigation historique, à droite du nav-back */
-.nav-prev{position:fixed;top:120px;left:140px;display:none;align-items:center;gap:6px;padding:7px 13px;background:rgba(176,132,255,.08);border:1px solid rgba(176,132,255,.4);color:#e8e0ff;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;cursor:pointer;transition:all .2s;z-index:14;text-decoration:none}
+/* nav-back + nav-prev : repositionnés en bas pour ne rien couvrir */
+.nav-back{bottom:26px !important; top:auto !important}
+/* nav-prev : à droite du nav-back en bas */
+.nav-prev{position:fixed;bottom:26px;top:auto;left:140px;display:none;align-items:center;gap:6px;padding:7px 13px;background:rgba(176,132,255,.08);border:1px solid rgba(176,132,255,.4);color:#e8e0ff;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;cursor:pointer;transition:all .2s;z-index:14;text-decoration:none}
 .nav-prev.show{display:inline-flex}
 .nav-prev:hover{background:rgba(176,132,255,.18);border-color:rgba(176,132,255,.7);box-shadow:0 0 12px rgba(176,132,255,.3)}
 .nav-prev .arrow{display:none}
@@ -3406,6 +3406,7 @@ const SKILL_RINGS = [
 const crateGroup = new THREE.Group();
 crateGroup.position.set(-5.2, -3.0, 1.5);
 crateGroup.rotation.y = 0.55;  /* angled toward camera */
+crateGroup.scale.setScalar(0.5); /* compact size — doesn't block project doors */
 crateGroup.userData.activated = false;  /* hidden until globe reveals */
 inside.add(crateGroup);
 
@@ -6124,30 +6125,32 @@ function tick(){
       skillCrystals.forEach((c, i) => {
         const order = c.userData.revealOrder;
         const totalSk = skillCrystals.length;
-        const personalReveal = Math.max(0, Math.min(1, (CRATE_STATE.reveal * (totalSk + 6)) - order * 0.45));
+        /* Stagger ordonné : chaque cristal émerge dans une fenêtre distincte,
+           en vague régulière du premier au dernier sur tout l'arc du reveal. */
+        const stagger = order / Math.max(1, totalSk - 1); /* 0..1 normalisé */
+        const personalReveal = Math.max(0, Math.min(1, (CRATE_STATE.reveal - stagger * 0.6) / 0.4));
         c.material.opacity = personalReveal * 0.95;
         c.material.emissiveIntensity = personalReveal * (0.65 + Math.sin(now * 1.4 + c.userData.basePulse) * 0.25);
         /* Crystal point light pulses with glow */
         const glowPulse = 0.8 + Math.sin(now * 1.4 + c.userData.basePulse) * 0.35;
         if (c.userData.light) c.userData.light.intensity = personalReveal * glowPulse * 1.1;
-        /* Logo rises from crate bottom (y=0.25) up to float height */
-        const riseY = c.userData.basePos.y + 0.1 + personalReveal * 0.6;
-        const floatY = Math.sin(now * 0.6 + c.userData.basePulse) * 0.05;
-        /* Logo opacity + glow burst on reveal */
+        /* Logo monte depuis le fond de la caisse (basePos.y - 0.2) jusqu'au-dessus du bord */
+        const riseY = c.userData.basePos.y - 0.2 + personalReveal * 1.4;
+        const floatY = Math.sin(now * 0.6 + c.userData.basePulse) * 0.06;
+        /* Logo opacity + scale progressifs */
         if (c.userData.logoMesh){
-          c.userData.logoMesh.material.opacity = Math.min(1, personalReveal * 1.15);
+          c.userData.logoMesh.material.opacity = Math.min(1, personalReveal * 1.2);
           c.userData.logoMesh.position.y = riseY + floatY * personalReveal;
           c.userData.logoMesh.lookAt(camera.position);
-          /* Scale logo: starts small, grows to full */
-          const logoScale = 0.3 + personalReveal * 0.7;
+          const logoScale = 0.2 + personalReveal * 0.8; /* démarre petit, grandit */
           c.userData.logoMesh.scale.setScalar(logoScale);
         }
         if (c.userData.lblMesh){
-          c.userData.lblMesh.material.opacity = personalReveal * 0.95;
-          c.userData.lblMesh.position.y = riseY + 0.42 + floatY * personalReveal;
+          c.userData.lblMesh.material.opacity = personalReveal * 0.92;
+          c.userData.lblMesh.position.y = riseY + 0.44 + floatY * personalReveal;
           c.userData.lblMesh.lookAt(camera.position);
         }
-        /* Rotation + floating */
+        /* Rotation lente + micro-flottaison */
         c.rotation.y += 0.005;
         c.rotation.x += 0.003;
         c.position.y = c.userData.baseY + floatY * personalReveal;
