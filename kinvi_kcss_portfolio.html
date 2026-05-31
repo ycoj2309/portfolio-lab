@@ -2,9 +2,29 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#020509">
-<title>Jahdiel Cognitive Space Station</title>
+<meta name="description" content="Portfolio de Jahdiel Kinvi — Data Analyst & Coordinateur de Projets IA. Projets NBA Scraping, Olist, PayFit GEO/SEO, Mirakl Hackathon, Todomaking AI Agent.">
+<meta name="author" content="Jahdiel Kinvi">
+<meta name="robots" content="index, follow">
+<!-- Open Graph / LinkedIn / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ycoj2309.github.io/portfolio-lab/kinvi_kcss_portfolio.html">
+<meta property="og:title" content="Jahdiel Kinvi — Cognitive Space Station Portfolio">
+<meta property="og:description" content="Data Analyst & Coordinateur de Projets IA. 6 projets réels : NBA Analytics, Olist BI, PayFit GEO/SEO, Mirakl Agentic, Todomaking AI Agent.">
+<meta property="og:image" content="https://ycoj2309.github.io/portfolio-lab/jcss_logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jahdiel Kinvi — JCSS Portfolio">
+<meta name="twitter:description" content="Data Analyst & Coordinateur de Projets IA. Station spatiale cognitive dédiée à l'IA, la Data et le Business.">
+<meta name="twitter:image" content="https://ycoj2309.github.io/portfolio-lab/jcss_logo.png">
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="jcss_logo.png">
+<link rel="apple-touch-icon" href="jcss_logo.png">
+<!-- Google Fonts — JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Jahdiel Kinvi — Cognitive Space Station</title>
 <style>
 :root{
   --bg-0:#020509; --bg-1:#050a14; --bg-2:#0a1426;
@@ -12,6 +32,8 @@
   --cyan:#4ae3ff; --cyan-soft:rgba(74,227,255,.45); --cyan-glow:rgba(74,200,255,.85);
   --hot:#aef0ff; --warn:#ff7050; --green:#4adfa0; --amber:#ffb347;
   --mono:'JetBrains Mono',ui-monospace,'SF Mono','Roboto Mono',Consolas,monospace;
+  --display:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+  --body:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;
   --serif:'Georgia',serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -35,7 +57,7 @@ body.over-interact{cursor:pointer}
 }
 #portal-bg{
   position:fixed;inset:0;z-index:0;
-  background:url('/portal_bg.jpg') no-repeat center/cover;
+  background:url('portal_bg.jpg') no-repeat center/cover;
   transition:opacity .8s ease;
   pointer-events:none;
   animation:portal-breathe 10s ease-in-out infinite, portal-flicker 16s linear infinite;
@@ -632,12 +654,6 @@ body.over-interact{cursor:pointer}
 
 @media (max-width: 720px){
   .hud-top{height:50px;padding:0 14px;font-size:9.5px;letter-spacing:.16em}
-  .skill-foot{padding:10px 14px;font-size:8px}
-  .skill-legend{gap:8px}
-}
-
-@media (max-width: 720px){
-  .hud-top{height:50px;padding:0 14px;font-size:9.5px;letter-spacing:.16em}
   .hud-top .branding-id .id{font-size:9px}
   .hud-top .branding-id .sub{display:none}
   .hud-top .toggles{gap:6px}
@@ -652,6 +668,8 @@ body.over-interact{cursor:pointer}
   .photo-frame{width:160px;height:160px}
   .profile-head{padding:14px 18px}
   .data-zone{padding:18px}
+  .skill-foot{padding:10px 14px;font-size:8px}
+  .skill-legend{gap:8px}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -1056,7 +1074,7 @@ Object.entries(ASSETS.logos || {}).forEach(([label, dataUri]) => {
 
 /* ── JCSS logo override ── */
 (function(){
-  const SRC = '/jcss_logo.png';
+  const SRC = 'jcss_logo.png';
   const img = new Image();
   img.onload = function(){
     if(!ASSETS.emblem) ASSETS.emblem = {};
