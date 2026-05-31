@@ -507,8 +507,8 @@ body.over-interact{cursor:pointer}
 .nav-history:hover{background:rgba(74,200,255,.18);border-color:rgba(74,200,255,.8);box-shadow:0 0 14px rgba(74,200,255,.3)}
 .nav-history .arrow-left{display:inline-block;width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-right:6px solid currentColor}
 
-/* HUD trigger for Future Chamber + Finale (small icons top right) */
-.hud-aux{position:fixed;top:26px;right:160px;display:flex;gap:10px;z-index:12}
+/* HUD trigger for Future Chamber + Finale — sous la barre top, aligné à droite */
+.hud-aux{position:fixed;top:74px;right:26px;display:flex;gap:10px;z-index:12}
 .hud-aux button{background:rgba(2,8,18,.7);border:1px solid rgba(74,200,255,.35);color:rgba(220,235,250,.75);font-family:var(--mono);font-size:10px;letter-spacing:.22em;padding:8px 14px;cursor:pointer;transition:all .2s;backdrop-filter:blur(4px);opacity:0;pointer-events:none}
 .hud-aux button.show{opacity:1;pointer-events:auto}
 .hud-aux button:hover{background:rgba(74,200,255,.18);border-color:rgba(74,200,255,.8);color:#dff2ff;box-shadow:0 0 12px rgba(74,200,255,.3)}
@@ -553,7 +553,7 @@ body.over-interact{cursor:pointer}
 .analytics-bar-track{height:3px;background:rgba(74,200,255,.1);border-radius:2px;overflow:hidden}
 .analytics-bar-fill{height:100%;background:linear-gradient(90deg,rgba(74,200,255,.6),rgba(74,200,255,1));border-radius:2px;transition:width .6s ease}
 @media(max-width:760px){
-  .hud-aux{right:16px;top:14px;gap:6px}
+  .hud-aux{right:16px;top:64px;gap:6px}
   .hud-aux button{padding:6px 10px;font-size:9px;letter-spacing:.18em}
   .nav-history{left:120px;top:64px;padding:6px 10px}
 }
@@ -4337,7 +4337,12 @@ function refreshNavBack(){
   } else if (document.getElementById('profile').classList.contains('show')){
     label = t('nav_close'); visible = true; action = 'closeProfile';
   } else if (STATE.phase === 'room'){
-    label = t('nav_restart'); visible = true; action = 'restartExperience';
+    /* Back ≠ Restart : visible uniquement si historique de navigation disponible */
+    if (STATE.phaseHistory && STATE.phaseHistory.length > 0){
+      label = t('nav_back') || '← BACK'; visible = true; action = 'navigateBack';
+    } else {
+      visible = false;
+    }
   } else if (CINE.active || STATE.phase === 'corridor_drift' || ROOM_TRANS.active){
     visible = false;
   }
